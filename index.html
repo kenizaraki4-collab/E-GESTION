@@ -44,6 +44,19 @@
     .msg.show{display:block}
     .msg.ok{background:rgba(46,204,113,.12);color:var(--ok)}
     .msg.error{background:rgba(255,77,77,.12);color:var(--danger)}
+
+    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin:30px auto 0}
+    @media (max-width:700px){.plans-grid{grid-template-columns:1fr}}
+    .plan-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:left}
+    .plan-card.recommande{border-color:var(--blue)}
+    .plan-name{font-size:13px;color:var(--blue2);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+    .plan-price{font-size:32px;font-weight:800;margin:10px 0 4px}
+    .plan-price span{font-size:14px;color:var(--muted);font-weight:400}
+    .plan-save{display:inline-block;background:rgba(46,204,113,.15);color:var(--ok);font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-bottom:14px}
+    .plan-card ul{margin:14px 0;padding-left:18px;color:var(--muted);font-size:13px}
+    .plan-card li{margin-bottom:6px}
+
+    .abo-status{font-size:12px;color:var(--muted);margin-top:6px}
   </style>
 
   <script
@@ -65,6 +78,36 @@
       <h3>Connexion requise</h3>
       <p>Connectez-vous pour accéder à votre espace de gestion.</p>
       <button class="btn" onclick="ouvrirConnexion()">Se connecter / S'inscrire</button>
+    </div>
+
+    <!-- PAYWALL : affiché si connecté mais pas d'abonnement actif -->
+    <div id="gate-paywall" class="auth-gate" style="display:none;">
+      <h3>Choisissez votre formule</h3>
+      <p>Abonnez-vous pour accéder à votre espace de gestion (stock, ventes, rapports).</p>
+      <div class="plans-grid">
+        <div class="plan-card">
+          <div class="plan-name">Mensuel</div>
+          <div class="plan-price">5 000 FCFA <span>/ mois</span></div>
+          <ul>
+            <li>Gestion illimitée de produits</li>
+            <li>Ventes rapides illimitées</li>
+            <li>Suivi de stock en temps réel</li>
+          </ul>
+          <button class="btn btn-full" onclick="choisirPlan('mensuel')">Choisir ce plan</button>
+        </div>
+        <div class="plan-card recommande">
+          <div class="plan-name">Annuel</div>
+          <span class="plan-save">2 mois offerts</span>
+          <div class="plan-price">50 000 FCFA <span>/ an</span></div>
+          <ul>
+            <li>Tout le plan Mensuel</li>
+            <li>Équivalent à 4 167 FCFA/mois</li>
+            <li>Le meilleur rapport qualité/prix</li>
+          </ul>
+          <button class="btn btn-full" onclick="choisirPlan('annuel')">Choisir ce plan</button>
+        </div>
+      </div>
+      <p class="abo-status">Après avoir choisi, vous serez redirigé vers WhatsApp pour finaliser le paiement. Votre accès sera activé dès réception du paiement.</p>
     </div>
 
     <div id="app-content" style="display:none;">
@@ -174,7 +217,6 @@
 
       authContainer.innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
       gateApp.style.display = 'none';
-      appContent.style.display = 'block';
 
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
@@ -185,8 +227,54 @@
         }
       });
 
-      chargerProduits();
+      await verifierAbonnementEtAfficher();
     });
+
+    // Verifie si l'utilisateur a un abonnement actif et non expire.
+    // Affiche soit le paywall (choix de plan), soit l'application.
+    async function verifierAbonnementEtAfficher() {
+      const gatePaywall = document.getElementById('gate-paywall');
+      const appContent = document.getElementById('app-content');
+      const userEmail = window.Clerk.user.primaryEmailAddress.emailAddress;
+      const aujourdHui = new Date().toISOString().slice(0, 10);
+
+      const { data: abonnements, error } = await supabaseClient
+        .from('abonnements')
+        .select('*')
+        .eq('user_email', userEmail)
+        .eq('statut', 'actif')
+        .gte('date_fin', aujourdHui)
+        .order('date_fin', { ascending: false })
+        .limit(1);
+
+      const aUnAbonnementActif = !error && abonnements && abonnements.length > 0;
+
+      if (aUnAbonnementActif) {
+        gatePaywall.style.display = 'none';
+        appContent.style.display = 'block';
+        chargerProduits();
+      } else {
+        gatePaywall.style.display = 'block';
+        appContent.style.display = 'none';
+      }
+    }
+
+    // Redirige vers WhatsApp avec un message pre-rempli pour finaliser
+    // le paiement manuellement (T-Money/Flooz) en attendant l'integration
+    // automatique CinetPay.
+    function choisirPlan(plan) {
+      const userEmail = window.Clerk.user.primaryEmailAddress.emailAddress;
+      const prix = plan === 'annuel' ? '50 000 FCFA (annuel)' : '5 000 FCFA (mensuel)';
+      const numeroWhatsapp = "22872182316";
+
+      const message = `🧾 *Nouvel abonnement E-Gestion*\n\n` +
+        `👤 *Email :* ${userEmail}\n` +
+        `📦 *Formule choisie :* ${plan === 'annuel' ? 'Annuel' : 'Mensuel'}\n` +
+        `💰 *Montant :* ${prix}\n\n` +
+        `Je souhaite payer pour activer mon abonnement.`;
+
+      window.location.href = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(message)}`;
+    }
 
     async function chargerProduits() {
       const tbody = document.getElementById('stock-table-body');
@@ -295,3 +383,4 @@
   </script>
 </body>
 </html>
+
