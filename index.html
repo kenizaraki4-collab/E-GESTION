@@ -3,172 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Gestion | Stock &amp; Ventes</title>
+  <title>E-Gestion — Stock & Ventes</title>
+  <meta name="robots" content="noindex, nofollow">
 
   <style>
-    :root{--bg:#050a14;--panel:#0a1220;--text:#f5f8ff;--muted:#91a0b8;--blue:#22a9ff;--blue2:#7bd5ff;--line:rgba(255,255,255,.09);--max:1100px;--danger:#ff4d4d;--warn:#ffc107;--ok:#2ecc71}
+    :root{--bg:#050a14;--panel:#0a1220;--text:#f5f8ff;--muted:#91a0b8;--blue:#22a9ff;--danger:#ff4d4d;--ok:#2ecc71;--line:rgba(255,255,255,.09)}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:30px 20px}
-    .container{max-width:var(--max);margin:auto}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;border-bottom:1px solid var(--line);padding-bottom:20px}
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px}
+    .container{max-width:1000px;margin:auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--line)}
     h1{font-size:22px}
     h1 span{color:var(--blue)}
-    h2{font-size:17px;margin-bottom:16px;color:var(--blue2)}
-
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
-    @media (max-width:800px){.grid{grid-template-columns:1fr}}
-
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
-
+    
+    .screen{display:none}
+    .screen.active{display:block}
+    
+    .gate{text-align:center;padding:100px 20px}
+    .gate h2{font-size:28px;margin-bottom:20px}
+    .gate p{color:var(--muted);margin-bottom:30px}
+    
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:none;background:var(--blue);color:#000}
+    .btn:hover{opacity:.9}
+    .btn-full{width:100%;margin-top:10px}
+    
+    .plans{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin:30px auto}
+    @media (max-width:700px){.plans{grid-template-columns:1fr}}
+    .plan{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+    .plan.featured{border-color:var(--blue);border-width:2px}
+    .plan-title{font-size:13px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+    .plan-price{font-size:32px;font-weight:800;margin-bottom:5px}
+    .plan-price small{font-size:14px;color:var(--muted);font-weight:400}
+    .plan-tag{display:inline-block;background:rgba(46,204,113,.15);color:var(--ok);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:15px}
+    .plan ul{margin:15px 0;padding-left:18px;color:var(--muted);font-size:13px}
+    .plan li{margin-bottom:8px}
+    
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:24px}
+    .card h2{font-size:17px;color:var(--blue);margin-bottom:16px}
+    
     .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
     .form-row label{font-size:12px;color:var(--muted);font-weight:600}
-    .form-row input, .form-row select{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:white;font-size:14px;outline:none}
-
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:none;background:var(--blue);color:#02101c}
-    .btn:hover{opacity:.9}
-    .btn-full{width:100%}
-
-    table{width:100%;border-collapse:collapse;text-align:left;margin-top:10px}
-    th, td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}
+    .form-row input{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:white;font-size:14px;outline:none}
+    
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th, td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
     th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
-
-    .badge{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;display:inline-block}
-    .badge-ok{background:rgba(46,204,113,.15);color:var(--ok);border:1px solid rgba(46,204,113,.3)}
-    .badge-warn{background:rgba(255,193,7,.15);color:var(--warn);border:1px solid rgba(255,193,7,.3)}
-    .badge-danger{background:rgba(255,77,77,.15);color:var(--danger);border:1px solid rgba(255,77,77,.3)}
-
-    .auth-gate{text-align:center;padding:80px 20px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:20px}
-    .auth-gate p{color:var(--muted);margin-bottom:20px}
-
-    .msg{font-size:13px;margin-top:10px;padding:8px 12px;border-radius:8px;display:none}
-    .msg.show{display:block}
-    .msg.ok{background:rgba(46,204,113,.12);color:var(--ok)}
-    .msg.error{background:rgba(255,77,77,.12);color:var(--danger)}
-
-    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin:30px auto 0}
-    @media (max-width:700px){.plans-grid{grid-template-columns:1fr}}
-    .plan-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;text-align:left}
-    .plan-card.recommande{border-color:var(--blue)}
-    .plan-name{font-size:13px;color:var(--blue2);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-    .plan-price{font-size:32px;font-weight:800;margin:10px 0 4px}
-    .plan-price span{font-size:14px;color:var(--muted);font-weight:400}
-    .plan-save{display:inline-block;background:rgba(46,204,113,.15);color:var(--ok);font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-bottom:14px}
-    .plan-card ul{margin:14px 0;padding-left:18px;color:var(--muted);font-size:13px}
-    .plan-card li{margin-bottom:6px}
-
-    .abo-status{font-size:12px;color:var(--muted);margin-top:6px}
+    .badge{padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700}
+    .badge-ok{background:rgba(46,204,113,.15);color:var(--ok)}
+    .badge-alert{background:rgba(255,193,7,.15);color:#ffc107}
+    .badge-danger{background:rgba(255,77,77,.15);color:var(--danger)}
+    
+    .loading{text-align:center;color:var(--muted);}
   </style>
 
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
-  </script>
+  <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>E<span>-Gestion</span> &mdash; Stock &amp; Ventes</h1>
-      <div id="auth-container"></div>
+      <h1>E<span>-Gestion</span></h1>
+      <div id="auth-btn"></div>
     </header>
 
-    <div id="gate-app" class="auth-gate">
-      <h3>Connexion requise</h3>
-      <p>Connectez-vous pour accéder à votre espace de gestion.</p>
-      <button class="btn" onclick="ouvrirConnexion()">Se connecter / S'inscrire</button>
+    <!-- ÉCRAN 1: Pas connecté -->
+    <div id="screen-login" class="screen active">
+      <div class="gate">
+        <h2>Connexion requise</h2>
+        <p>Connectez-vous pour accéder à votre espace de gestion.</p>
+        <button class="btn" onclick="openSignIn()">Se connecter / S'inscrire</button>
+      </div>
     </div>
 
-    <!-- PAYWALL : affiché si connecté mais pas d'abonnement actif -->
-    <div id="gate-paywall" class="auth-gate" style="display:none;">
-      <h3>Choisissez votre formule</h3>
-      <p>Abonnez-vous pour accéder à votre espace de gestion (stock, ventes, rapports).</p>
-      <div class="plans-grid">
-        <div class="plan-card">
-          <div class="plan-name">Mensuel</div>
-          <div class="plan-price">5 000 FCFA <span>/ mois</span></div>
-          <ul>
-            <li>Gestion illimitée de produits</li>
-            <li>Ventes rapides illimitées</li>
-            <li>Suivi de stock en temps réel</li>
-          </ul>
-          <button class="btn btn-full" onclick="choisirPlan('mensuel')">Choisir ce plan</button>
-        </div>
-        <div class="plan-card recommande">
-          <div class="plan-name">Annuel</div>
-          <span class="plan-save">2 mois offerts</span>
-          <div class="plan-price">50 000 FCFA <span>/ an</span></div>
-          <ul>
-            <li>Tout le plan Mensuel</li>
-            <li>Équivalent à 4 167 FCFA/mois</li>
-            <li>Le meilleur rapport qualité/prix</li>
-          </ul>
-          <button class="btn btn-full" onclick="choisirPlan('annuel')">Choisir ce plan</button>
+    <!-- ÉCRAN 2: Pas d'abonnement — Paywall -->
+    <div id="screen-paywall" class="screen">
+      <div class="gate">
+        <h2>Choisissez votre formule</h2>
+        <p>Abonnez-vous pour accéder à votre espace de gestion.</p>
+        
+        <div class="plans">
+          <div class="plan">
+            <div class="plan-title">Mensuel</div>
+            <div class="plan-price">5 000 FCFA <small>/ mois</small></div>
+            <ul>
+              <li>Gestion illimitée de produits</li>
+              <li>Ventes rapides illimitées</li>
+              <li>Suivi de stock en temps réel</li>
+            </ul>
+            <button class="btn btn-full" onclick="choosePlan('mensuel')">Choisir ce plan</button>
+          </div>
+          
+          <div class="plan featured">
+            <div class="plan-title">Annuel</div>
+            <span class="plan-tag">2 mois offerts</span>
+            <div class="plan-price">50 000 FCFA <small>/ an</small></div>
+            <ul>
+              <li>Tout le plan Mensuel</li>
+              <li>Équivalent à 4 167 FCFA/mois</li>
+              <li>Le meilleur rapport qualité/prix</li>
+            </ul>
+            <button class="btn btn-full" onclick="choosePlan('annuel')">Choisir ce plan</button>
+          </div>
         </div>
       </div>
-      <p class="abo-status">Après avoir choisi, vous serez redirigé vers WhatsApp pour finaliser le paiement. Votre accès sera activé dès réception du paiement.</p>
     </div>
 
-    <div id="app-content" style="display:none;">
-      <div class="grid">
-        <!-- AJOUT PRODUIT -->
-        <div class="card">
-          <h2>Ajouter un produit</h2>
-          <form id="form-produit">
-            <div class="form-row">
-              <label for="p-nom">Nom du produit</label>
-              <input type="text" id="p-nom" required maxlength="100">
-            </div>
-            <div class="form-row">
-              <label for="p-prix">Prix unitaire (FCFA)</label>
-              <input type="number" id="p-prix" min="0" step="1" required>
-            </div>
-            <div class="form-row">
-              <label for="p-stock">Quantité en stock</label>
-              <input type="number" id="p-stock" min="0" step="1" required>
-            </div>
-            <div class="form-row">
-              <label for="p-seuil">Seuil d'alerte (stock bas)</label>
-              <input type="number" id="p-seuil" min="0" step="1" value="5">
-            </div>
-            <button type="submit" class="btn btn-full">Ajouter le produit</button>
-            <div id="msg-produit" class="msg"></div>
-          </form>
-        </div>
-
-        <!-- VENTE RAPIDE -->
-        <div class="card">
-          <h2>Vente rapide</h2>
-          <form id="form-vente">
-            <div class="form-row">
-              <label for="v-produit">Produit</label>
-              <select id="v-produit" required></select>
-            </div>
-            <div class="form-row">
-              <label for="v-quantite">Quantité vendue</label>
-              <input type="number" id="v-quantite" min="1" step="1" required>
-            </div>
-            <button type="submit" class="btn btn-full">Enregistrer la vente</button>
-            <div id="msg-vente" class="msg"></div>
-          </form>
-        </div>
+    <!-- ÉCRAN 3: Dashboard principal -->
+    <div id="screen-app" class="screen">
+      <div class="card">
+        <h2>Ajouter un produit</h2>
+        <form id="form-add">
+          <div class="form-row">
+            <label>Nom du produit</label>
+            <input type="text" id="input-nom" required>
+          </div>
+          <div class="form-row">
+            <label>Prix unitaire (FCFA)</label>
+            <input type="number" id="input-prix" required>
+          </div>
+          <div class="form-row">
+            <label>Quantité en stock</label>
+            <input type="number" id="input-stock" required>
+          </div>
+          <div class="form-row">
+            <label>Seuil d'alerte</label>
+            <input type="number" id="input-seuil" value="10">
+          </div>
+          <button type="submit" class="btn btn-full">Ajouter le produit</button>
+        </form>
       </div>
 
       <div class="card">
         <h2>État du stock</h2>
         <table>
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Prix</th>
-              <th>Stock</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody id="stock-table-body">
-            <tr><td colspan="4">Chargement...</td></tr>
-          </tbody>
+          <thead><tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Statut</th></tr></thead>
+          <tbody id="table-produits"><tr><td colspan="4" class="loading">Chargement...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -177,210 +145,99 @@
   <script>
     const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
-    let supabaseClient = null;
+    let supabase = null;
+    let userEmail = null;
 
-    // SECURITE : echappement HTML pour empecher toute injection de script.
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[m]));
+    function openSignIn() { if (window.Clerk) window.Clerk.redirectToSignIn(); }
+    function choosePlan(plan) {
+      const msg = `🧾 Nouvel abonnement E-Gestion\n👤 Email: ${userEmail}\n📦 Formule: ${plan}\n💰 Montant: ${plan === 'annuel' ? '50 000 FCFA/an' : '5 000 FCFA/mois'}\n\nJe souhaite payer.`;
+      window.location.href = `https://wa.me/22872182316?text=${encodeURIComponent(msg)}`;
     }
 
-    function ouvrirConnexion() {
-      if (window.Clerk) window.Clerk.redirectToSignIn();
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
     }
 
-    function afficherMessage(id, texte, type) {
-      const el = document.getElementById(id);
-      el.textContent = texte;
-      el.className = `msg show ${type}`;
-      setTimeout(() => { el.className = 'msg'; }, 4000);
-    }
-
-    window.addEventListener('load', async () => {
-      while (!window.Clerk) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-      await window.Clerk.load();
-
-      const gateApp = document.getElementById('gate-app');
-      const appContent = document.getElementById('app-content');
-      const authContainer = document.getElementById('auth-container');
-
-      if (!window.Clerk.user) {
-        gateApp.style.display = 'block';
-        appContent.style.display = 'none';
-        authContainer.innerHTML = `<button class="btn" onclick="ouvrirConnexion()">Se connecter</button>`;
+    async function loadProducts() {
+      const { data, error } = await supabase.from('produits').select('*').order('created_at', { ascending: false });
+      const tbody = document.getElementById('table-produits');
+      
+      if (error || !data) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--danger)">Erreur: ${error?.message || 'Inconnue'}</td></tr>`;
         return;
       }
 
-      authContainer.innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
-      gateApp.style.display = 'none';
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="loading">Aucun produit.</td></tr>`;
+        return;
+      }
 
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      tbody.innerHTML = data.map(p => {
+        let badge;
+        if (p.quantite_stock === 0) badge = `<span class="badge badge-danger">Rupture</span>`;
+        else if (p.quantite_stock <= p.seuil_alerte) badge = `<span class="badge badge-alert">Stock bas</span>`;
+        else badge = `<span class="badge badge-ok">OK</span>`;
+        return `<tr><td>${p.nom}</td><td>${p.prix} FCFA</td><td>${p.quantite_stock} u.</td><td>${badge}</td></tr>`;
+      }).join('');
+    }
+
+    document.getElementById('form-add').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await supabase.from('produits').insert([{
+        nom: document.getElementById('input-nom').value,
+        prix: parseFloat(document.getElementById('input-prix').value),
+        quantite_stock: parseInt(document.getElementById('input-stock').value),
+        seuil_alerte: parseInt(document.getElementById('input-seuil').value)
+      }]);
+      if (!error) {
+        document.getElementById('form-add').reset();
+        loadProducts();
+      }
+    });
+
+    window.addEventListener('load', async () => {
+      while (!window.Clerk) await new Promise(r => setTimeout(r, 100));
+      await window.Clerk.load();
+
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
-          if (window.Clerk.session) {
-            return await window.Clerk.session.getToken({ skipCache: true });
-          }
+          if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
           return null;
         }
       });
 
-      await verifierAbonnementEtAfficher();
-    });
+      if (!window.Clerk.user) {
+        showScreen('screen-login');
+        document.getElementById('auth-btn').innerHTML = '<button class="btn" onclick="openSignIn()">Se connecter</button>';
+        return;
+      }
 
-    // Verifie si l'utilisateur a un abonnement actif et non expire.
-    // Affiche soit le paywall (choix de plan), soit l'application.
-    async function verifierAbonnementEtAfficher() {
-      const gatePaywall = document.getElementById('gate-paywall');
-      const appContent = document.getElementById('app-content');
-      const userEmail = window.Clerk.user.primaryEmailAddress.emailAddress;
-      const aujourdHui = new Date().toISOString().slice(0, 10);
+      document.getElementById('auth-btn').innerHTML = '<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>';
 
-      const { data: abonnements, error } = await supabaseClient
+      userEmail = window.Clerk.user.emailAddresses?.[0]?.emailAddress;
+      if (!userEmail) {
+        console.error('Email non trouvé');
+        showScreen('screen-login');
+        return;
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: abos } = await supabase
         .from('abonnements')
         .select('*')
         .eq('user_email', userEmail)
         .eq('statut', 'actif')
-        .gte('date_fin', aujourdHui)
-        .order('date_fin', { ascending: false })
+        .gte('date_fin', today)
         .limit(1);
 
-      const aUnAbonnementActif = !error && abonnements && abonnements.length > 0;
-
-      if (aUnAbonnementActif) {
-        gatePaywall.style.display = 'none';
-        appContent.style.display = 'block';
-        chargerProduits();
+      if (abos && abos.length > 0) {
+        showScreen('screen-app');
+        loadProducts();
       } else {
-        gatePaywall.style.display = 'block';
-        appContent.style.display = 'none';
+        showScreen('screen-paywall');
       }
-    }
-
-    // Redirige vers WhatsApp avec un message pre-rempli pour finaliser
-    // le paiement manuellement (T-Money/Flooz) en attendant l'integration
-    // automatique CinetPay.
-    function choisirPlan(plan) {
-      const userEmail = window.Clerk.user.primaryEmailAddress.emailAddress;
-      const prix = plan === 'annuel' ? '50 000 FCFA (annuel)' : '5 000 FCFA (mensuel)';
-      const numeroWhatsapp = "22872182316";
-
-      const message = `🧾 *Nouvel abonnement E-Gestion*\n\n` +
-        `👤 *Email :* ${userEmail}\n` +
-        `📦 *Formule choisie :* ${plan === 'annuel' ? 'Annuel' : 'Mensuel'}\n` +
-        `💰 *Montant :* ${prix}\n\n` +
-        `Je souhaite payer pour activer mon abonnement.`;
-
-      window.location.href = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(message)}`;
-    }
-
-    async function chargerProduits() {
-      const tbody = document.getElementById('stock-table-body');
-      const select = document.getElementById('v-produit');
-
-      const { data: produits, error } = await supabaseClient
-        .from('produits')
-        .select('*')
-        .order('nom', { ascending: true });
-
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="4" style="color:#ff4d4d;">Erreur : ${escapeHtml(error.message)}</td></tr>`;
-        return;
-      }
-
-      if (!produits || produits.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4">Aucun produit pour l'instant.</td></tr>`;
-        select.innerHTML = `<option value="">Ajoutez d'abord un produit</option>`;
-        return;
-      }
-
-      tbody.innerHTML = produits.map(p => {
-        let badge;
-        if (p.quantite_stock <= 0) {
-          badge = `<span class="badge badge-danger">Rupture</span>`;
-        } else if (p.quantite_stock <= p.seuil_alerte) {
-          badge = `<span class="badge badge-warn">Stock bas</span>`;
-        } else {
-          badge = `<span class="badge badge-ok">OK</span>`;
-        }
-        return `
-          <tr>
-            <td>${escapeHtml(p.nom)}</td>
-            <td>${escapeHtml(p.prix)} FCFA</td>
-            <td>${escapeHtml(p.quantite_stock)}</td>
-            <td>${badge}</td>
-          </tr>
-        `;
-      }).join('');
-
-      select.innerHTML = produits
-        .filter(p => p.quantite_stock > 0)
-        .map(p => `<option value="${escapeHtml(p.id)}" data-prix="${escapeHtml(p.prix)}" data-stock="${escapeHtml(p.quantite_stock)}">${escapeHtml(p.nom)} (${escapeHtml(p.quantite_stock)} en stock)</option>`)
-        .join('');
-    }
-
-    document.getElementById('form-produit').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const nom = document.getElementById('p-nom').value.trim();
-      const prix = parseFloat(document.getElementById('p-prix').value);
-      const stock = parseInt(document.getElementById('p-stock').value, 10);
-      const seuil = parseInt(document.getElementById('p-seuil').value, 10) || 5;
-
-      const { error } = await supabaseClient.from('produits').insert([{
-        nom, prix, quantite_stock: stock, seuil_alerte: seuil
-      }]);
-
-      if (error) {
-        afficherMessage('msg-produit', "Erreur : " + error.message, 'error');
-        return;
-      }
-
-      afficherMessage('msg-produit', "Produit ajouté !", 'ok');
-      document.getElementById('form-produit').reset();
-      document.getElementById('p-seuil').value = 5;
-      chargerProduits();
-    });
-
-    document.getElementById('form-vente').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const select = document.getElementById('v-produit');
-      const produitId = select.value;
-      const quantite = parseInt(document.getElementById('v-quantite').value, 10);
-
-      if (!produitId) {
-        afficherMessage('msg-vente', "Sélectionnez un produit.", 'error');
-        return;
-      }
-
-      const option = select.selectedOptions[0];
-      const prixUnitaire = parseFloat(option.dataset.prix);
-      const stockDisponible = parseInt(option.dataset.stock, 10);
-
-      if (quantite > stockDisponible) {
-        afficherMessage('msg-vente', `Stock insuffisant (il reste ${stockDisponible}).`, 'error');
-        return;
-      }
-
-      const { error } = await supabaseClient.from('ventes').insert([{
-        produit_id: produitId,
-        quantite_vendue: quantite,
-        prix_unitaire: prixUnitaire
-      }]);
-
-      if (error) {
-        afficherMessage('msg-vente', "Erreur : " + error.message, 'error');
-        return;
-      }
-
-      afficherMessage('msg-vente', "Vente enregistrée !", 'ok');
-      document.getElementById('form-vente').reset();
-      chargerProduits();
     });
   </script>
 </body>
 </html>
-
