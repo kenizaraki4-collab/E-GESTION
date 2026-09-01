@@ -65,7 +65,10 @@
   <div class="container">
     <header>
       <h1>E<span>-Gestion</span> Pro</h1>
-      <div id="auth-btn"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <a href="https://wa.me/22872182316?text=Bonjour%2C%20je%20souhaite%20m'abonner%20%C3%A0%20E-Gestion%20Pro" target="_blank" class="btn" style="text-decoration:none">💬 Abonnement</a>
+        <div id="auth-btn"></div>
+      </div>
     </header>
 
     <nav>
@@ -170,7 +173,7 @@
       
       <div class="card">
         <h2>Historique des réceptions</h2>
-        <table><thead><tr><th>Fournisseur</th><th>Produit</th><th>Qty</th><th>Total achat</th><th>Date</th></tr></thead><tbody id="tbl-receptions"><tr><td colspan="5">Chargement...</td></tr></tbody></table>
+        <table><thead><tr><th>Fournisseur</th><th>Produit</th><th>Qty</th><th>Total achat</th><th>Date</th><th>Actions</th></tr></thead><tbody id="tbl-receptions"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -281,12 +284,32 @@
 
     // Charger les produits dans les selects
     async function loadProductSelects() {
-      const { data } = await db.from('produits').select('id, nom');
+      const { data } = await db.from('produits').select('id, nom, prix');
       if (data) {
-        document.getElementById('cmd-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
-        document.getElementById('rec-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+        const options = data.map(p => `<option value="${p.id}" data-prix="${p.prix}">${p.nom}</option>`).join('');
+        document.getElementById('cmd-produit').innerHTML = options;
+        document.getElementById('rec-produit').innerHTML = options;
       }
     }
+
+    // Auto-remplissage du prix quand un produit est sélectionné
+    document.getElementById('cmd-produit').addEventListener('change', (e) => {
+      const prix = e.target.selectedOptions[0]?.dataset.prix;
+      if (prix) document.getElementById('cmd-prix').value = prix;
+    });
+    document.getElementById('rec-produit').addEventListener('change', (e) => {
+      const prix = e.target.selectedOptions[0]?.dataset.prix;
+      if (prix) document.getElementById('rec-prix').value = prix;
+    });
+
+    // Dates par défaut = aujourd'hui (reste modifiable)
+    (function setDefaultDates() {
+      const today = new Date().toISOString().slice(0, 10);
+      const cmdDate = document.getElementById('cmd-date');
+      const recDate = document.getElementById('rec-date');
+      if (cmdDate) cmdDate.value = today;
+      if (recDate) recDate.value = today;
+    })();
 
     // Charger les clients/fournisseurs dans les selects
     async function loadClientsSelects() {
@@ -409,6 +432,62 @@
       }).join('');
     }
 
+    let commandesCache = [];
+    let receptionsCache = [];
+
+    function ouvrirFacture(titre, lignesInfo, tableauLignes, total) {
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html>
+        <head>
+          <title>${titre}</title>
+          <style>
+            body{font-family:Arial,sans-serif;padding:40px;color:#111}
+            h1{font-size:22px;border-bottom:2px solid #22a9ff;padding-bottom:10px}
+            .info{margin:20px 0;font-size:14px;line-height:1.6}
+            table{width:100%;border-collapse:collapse;margin-top:20px}
+            th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
+            th{background:#f0f0f0}
+            .total{margin-top:20px;font-size:16px;font-weight:bold;text-align:right}
+          </style>
+        </head>
+        <body>
+          <h1>E-Gestion Pro — ${titre}</h1>
+          <div class="info">${lignesInfo.join('<br>')}</div>
+          <table>
+            <thead><tr><th>Produit</th><th>Quantité</th><th>Prix unitaire</th><th>Total</th></tr></thead>
+            <tbody>${tableauLignes}</tbody>
+          </table>
+          <div class="total">Total : ${total}</div>
+          <script>window.onload = () => window.print();</script>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    function printFactureCommande(id) {
+      const c = commandesCache.find(x => x.id === id);
+      if (!c) return;
+      const ligne = `<tr><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.prix_unitaire)}</td><td>${formatCurrency(c.total_commande)}</td></tr>`;
+      ouvrirFacture('Facture Commande Client', [
+        `Client : ${c.client.nom}`,
+        `Date de commande : ${c.date_commande}`,
+        `Statut : ${c.statut}`
+      ], ligne, formatCurrency(c.total_commande));
+    }
+
+    function printFactureReception(id) {
+      const r = receptionsCache.find(x => x.id === id);
+      if (!r) return;
+      const ligne = `<tr><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.prix_unitaire_achat)}</td><td>${formatCurrency(r.total_reception)}</td></tr>`;
+      ouvrirFacture('Facture Réception Fournisseur', [
+        `Fournisseur : ${r.fournisseur.nom}`,
+        `Date de réception : ${r.date_reception}`,
+        `N° facture fournisseur : ${r.numero_facture || '-'}`
+      ], ligne, formatCurrency(r.total_reception));
+    }
+
     async function loadClients() {
       const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
       if (error) console.error('Erreur chargement clients:', error);
@@ -420,12 +499,13 @@
       const { data, error } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
       if (error) console.error('Erreur chargement commandes:', error);
       if (!data) return;
+      commandesCache = data;
       document.getElementById('tbl-commandes').innerHTML = data.map(c => {
         let badge;
         if (c.statut === 'livree') badge = `<span class="badge badge-ok">Livrée</span>`;
         else if (c.statut === 'partiellement_livree') badge = `<span class="badge badge-warn">Partielle</span>`;
         else badge = `<span class="badge">En attente</span>`;
-        return `<tr><td>${c.client.nom}</td><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
+        return `<tr><td>${c.client.nom}</td><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button> <button class="btn btn-small" onclick="printFactureCommande('${c.id}')">Facture</button></td></tr>`;
       }).join('');
     }
 
@@ -440,7 +520,8 @@
       const { data, error } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
       if (error) console.error('Erreur chargement réceptions:', error);
       if (!data) return;
-      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td></tr>`).join('');
+      receptionsCache = data;
+      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td><td><button class="btn btn-small" onclick="printFactureReception('${r.id}')">Facture</button></td></tr>`).join('');
     }
 
     async function loadMouvements() {
