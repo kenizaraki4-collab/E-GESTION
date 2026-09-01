@@ -299,6 +299,14 @@
       if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
     }
 
+    // Utilitaire : affiche une erreur Supabase de façon visible au lieu de l'ignorer silencieusement
+    function handleDbError(context, error) {
+      if (!error) return false;
+      console.error(`Erreur ${context}:`, error);
+      alert(`Erreur lors de ${context} : ${error.message}`);
+      return true;
+    }
+
     // Forms
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -308,11 +316,7 @@
         quantite_stock: parseInt(document.getElementById('prod-stock').value),
         seuil_alerte: parseInt(document.getElementById('prod-seuil').value)
       }]);
-      if (error) {
-        console.error('Erreur ajout produit:', error);
-        alert('Erreur lors de l\'ajout du produit : ' + error.message);
-        return;
-      }
+      if (handleDbError("l'ajout du produit", error)) return;
       document.getElementById('form-produit').reset();
       loadProducts();
       loadProductSelects();
@@ -320,11 +324,12 @@
 
     document.getElementById('form-client').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('clients').insert([{
+      const { error } = await db.from('clients').insert([{
         nom: document.getElementById('cli-nom').value,
         telephone: document.getElementById('cli-tel').value,
         email: document.getElementById('cli-email').value
       }]);
+      if (handleDbError("l'ajout du client", error)) return;
       document.getElementById('form-client').reset();
       loadClients();
       loadClientsSelects();
@@ -332,7 +337,7 @@
 
     document.getElementById('form-commande').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('commandes_clients').insert([{
+      const { error } = await db.from('commandes_clients').insert([{
         client_id: document.getElementById('cmd-client').value,
         produit_id: document.getElementById('cmd-produit').value,
         quantite_commandee: parseInt(document.getElementById('cmd-quantite').value),
@@ -340,6 +345,7 @@
         date_commande: new Date().toISOString().slice(0, 10),
         date_livraison_prevue: document.getElementById('cmd-date').value
       }]);
+      if (handleDbError("l'ajout de la commande", error)) return;
       document.getElementById('form-commande').reset();
       loadCommandes();
       loadBilans();
@@ -347,11 +353,12 @@
 
     document.getElementById('form-fournisseur').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('fournisseurs').insert([{
+      const { error } = await db.from('fournisseurs').insert([{
         nom: document.getElementById('fourn-nom').value,
         telephone: document.getElementById('fourn-tel').value,
         email: document.getElementById('fourn-email').value
       }]);
+      if (handleDbError("l'ajout du fournisseur", error)) return;
       document.getElementById('form-fournisseur').reset();
       loadFournisseurs();
       loadFournisseursSelects();
@@ -359,7 +366,7 @@
 
     document.getElementById('form-reception').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('receptions_fournisseurs').insert([{
+      const { error } = await db.from('receptions_fournisseurs').insert([{
         fournisseur_id: document.getElementById('rec-fournisseur').value,
         produit_id: document.getElementById('rec-produit').value,
         quantite_recue: parseInt(document.getElementById('rec-quantite').value),
@@ -367,6 +374,7 @@
         date_reception: document.getElementById('rec-date').value,
         numero_facture: document.getElementById('rec-facture').value
       }]);
+      if (handleDbError("l'ajout de la réception", error)) return;
       document.getElementById('form-reception').reset();
       loadReceptions();
       loadBilans();
@@ -374,12 +382,13 @@
 
     document.getElementById('form-mouvement').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('mouvements_comptables').insert([{
+      const { error } = await db.from('mouvements_comptables').insert([{
         type: document.getElementById('mv-type').value,
         montant: parseFloat(document.getElementById('mv-montant').value),
         description: document.getElementById('mv-desc').value,
         date_mouvement: new Date().toISOString().slice(0, 10)
       }]);
+      if (handleDbError("l'ajout du mouvement", error)) return;
       document.getElementById('form-mouvement').reset();
       loadMouvements();
       loadBilans();
@@ -401,13 +410,15 @@
     }
 
     async function loadClients() {
-      const { data } = await db.from('clients').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+      if (error) console.error('Erreur chargement clients:', error);
       if (!data) return;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
     }
 
     async function loadCommandes() {
-      const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
+      const { data, error } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
+      if (error) console.error('Erreur chargement commandes:', error);
       if (!data) return;
       document.getElementById('tbl-commandes').innerHTML = data.map(c => {
         let badge;
@@ -419,27 +430,32 @@
     }
 
     async function loadFournisseurs() {
-      const { data } = await db.from('fournisseurs').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('fournisseurs').select('*').order('created_at', { ascending: false });
+      if (error) console.error('Erreur chargement fournisseurs:', error);
       if (!data) return;
       document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
-      const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
+      const { data, error } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
+      if (error) console.error('Erreur chargement réceptions:', error);
       if (!data) return;
       document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td></tr>`).join('');
     }
 
     async function loadMouvements() {
-      const { data } = await db.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
+      const { data, error } = await db.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
+      if (error) console.error('Erreur chargement mouvements:', error);
       if (!data) return;
       document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
     }
 
     async function loadBilans() {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
-      const { data: bilanAnn } = await db.from('bilan_annuel').select('*').single();
+      const { data: bilan, error: errBilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
+      const { data: bilanAnn, error: errAnn } = await db.from('bilan_annuel').select('*').single();
+      if (errBilan) console.warn('Bilan du jour non trouvé (normal si aucune vente/achat aujourd\'hui):', errBilan.message);
+      if (errAnn) console.warn('Bilan annuel non trouvé (normal si aucune donnée cette année):', errAnn.message);
 
       if (bilan) {
         document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
