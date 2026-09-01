@@ -56,6 +56,20 @@
     .alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px}
     .alert.ok{background:rgba(46,204,113,.12);color:var(--ok);border:1px solid var(--ok)}
     .alert.error{background:rgba(255,77,77,.12);color:var(--danger);border:1px solid var(--danger)}
+
+    /* PAYWALL */
+    #paywall{display:none;min-height:80vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px 20px}
+    #paywall.active{display:flex}
+    #paywall h1{font-size:26px;margin-bottom:10px}
+    #paywall h1 span{color:var(--blue)}
+    #paywall p.sub{color:var(--muted);margin-bottom:30px;max-width:500px}
+    .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:600px;width:100%;margin-bottom:24px}
+    .plan{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+    .plan.highlight{border-color:var(--blue)}
+    .plan .plan-name{font-size:13px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+    .plan .plan-price{font-size:26px;font-weight:800;margin-bottom:4px}
+    .plan .plan-period{font-size:12px;color:var(--muted);margin-bottom:16px}
+    .content-locked{display:none !important}
   </style>
 
   <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
@@ -71,7 +85,26 @@
       </div>
     </header>
 
-    <nav>
+    <!-- PAYWALL : affiché uniquement si l'utilisateur n'a pas d'abonnement actif -->
+    <div id="paywall">
+      <h1>Accès <span>réservé aux abonnés</span></h1>
+      <p class="sub">Votre compte n'a pas (ou plus) d'abonnement actif à E-Gestion Pro. Choisissez une formule pour continuer à gérer votre stock, vos commandes et votre comptabilité.</p>
+      <div class="plans">
+        <div class="plan">
+          <div class="plan-name">Mensuel</div>
+          <div class="plan-price">10 000 FCFA</div>
+          <div class="plan-period">par mois</div>
+        </div>
+        <div class="plan highlight">
+          <div class="plan-name">Annuel</div>
+          <div class="plan-price">100 000 FCFA</div>
+          <div class="plan-period">par an</div>
+        </div>
+      </div>
+      <a href="https://wa.me/22872182316?text=Bonjour%2C%20je%20souhaite%20m'abonner%20%C3%A0%20E-Gestion%20Pro" target="_blank" class="btn" style="text-decoration:none">💬 S'abonner maintenant</a>
+    </div>
+
+    <nav id="main-nav" style="display:none">
       <button class="nav-btn active" onclick="switchScreen('stock')">📦 Stock</button>
       <button class="nav-btn" onclick="switchScreen('clients')">👥 Clients</button>
       <button class="nav-btn" onclick="switchScreen('commandes')">📋 Commandes</button>
@@ -81,6 +114,7 @@
       <button class="nav-btn" onclick="switchScreen('bilans')">📊 Bilans</button>
     </nav>
 
+    <div id="app-screens" style="display:none">
     <!-- STOCK -->
     <div id="screen-stock" class="screen active">
       <div class="card">
@@ -264,6 +298,7 @@
         </div>
       </div>
     </div>
+    </div><!-- /app-screens -->
   </div>
 
   <script>
@@ -554,6 +589,39 @@
       }
     }
 
+    // Vérifie si l'utilisateur connecté a un abonnement actif et non expiré.
+    // Nécessite une table Supabase "abonnements" avec les colonnes :
+    //   user_id (text, = Clerk user id), statut (text: 'actif'/'inactif'), date_expiration (date)
+    async function verifierAbonnement(userId) {
+      const { data, error } = await db
+        .from('abonnements')
+        .select('statut, date_expiration')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erreur vérification abonnement:', error);
+        return false; // par sécurité, on bloque l'accès en cas d'erreur
+      }
+      if (!data) return false;
+
+      const aujourdHui = new Date().toISOString().slice(0, 10);
+      const estActif = data.statut === 'actif' && (!data.date_expiration || data.date_expiration >= aujourdHui);
+      return estActif;
+    }
+
+    function afficherPaywall() {
+      document.getElementById('paywall').classList.add('active');
+      document.getElementById('main-nav').style.display = 'none';
+      document.getElementById('app-screens').style.display = 'none';
+    }
+
+    function afficherApp() {
+      document.getElementById('paywall').classList.remove('active');
+      document.getElementById('main-nav').style.display = 'flex';
+      document.getElementById('app-screens').style.display = 'block';
+    }
+
     async function updateCommande(id, statut) {
       await db.from('commandes_clients').update({ statut }).eq('id', id);
       loadCommandes();
@@ -590,6 +658,13 @@
           return null;
         }
       });
+
+      const abonneActif = await verifierAbonnement(window.Clerk.user.id);
+      if (!abonneActif) {
+        afficherPaywall();
+        return; // on n'accède à aucune donnée tant que l'abonnement n'est pas actif
+      }
+      afficherApp();
 
       loadProducts();
       loadClients();
