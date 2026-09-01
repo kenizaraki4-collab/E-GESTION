@@ -266,7 +266,7 @@
   <script>
     const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
-    let supabase = null;
+    let db = null;
 
     function switchScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -281,7 +281,7 @@
 
     // Charger les produits dans les selects
     async function loadProductSelects() {
-      const { data } = await supabase.from('produits').select('id, nom');
+      const { data } = await db.from('produits').select('id, nom');
       if (data) {
         document.getElementById('cmd-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
         document.getElementById('rec-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
@@ -290,19 +290,19 @@
 
     // Charger les clients/fournisseurs dans les selects
     async function loadClientsSelects() {
-      const { data } = await supabase.from('clients').select('id, nom');
+      const { data } = await db.from('clients').select('id, nom');
       if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
     }
 
     async function loadFournisseursSelects() {
-      const { data } = await supabase.from('fournisseurs').select('id, nom');
+      const { data } = await db.from('fournisseurs').select('id, nom');
       if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
     }
 
     // Forms
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('produits').insert([{
+      await db.from('produits').insert([{
         nom: document.getElementById('prod-nom').value,
         prix: parseFloat(document.getElementById('prod-prix').value),
         quantite_stock: parseInt(document.getElementById('prod-stock').value),
@@ -315,7 +315,7 @@
 
     document.getElementById('form-client').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('clients').insert([{
+      await db.from('clients').insert([{
         nom: document.getElementById('cli-nom').value,
         telephone: document.getElementById('cli-tel').value,
         email: document.getElementById('cli-email').value
@@ -327,7 +327,7 @@
 
     document.getElementById('form-commande').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('commandes_clients').insert([{
+      await db.from('commandes_clients').insert([{
         client_id: document.getElementById('cmd-client').value,
         produit_id: document.getElementById('cmd-produit').value,
         quantite_commandee: parseInt(document.getElementById('cmd-quantite').value),
@@ -342,7 +342,7 @@
 
     document.getElementById('form-fournisseur').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('fournisseurs').insert([{
+      await db.from('fournisseurs').insert([{
         nom: document.getElementById('fourn-nom').value,
         telephone: document.getElementById('fourn-tel').value,
         email: document.getElementById('fourn-email').value
@@ -354,7 +354,7 @@
 
     document.getElementById('form-reception').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('receptions_fournisseurs').insert([{
+      await db.from('receptions_fournisseurs').insert([{
         fournisseur_id: document.getElementById('rec-fournisseur').value,
         produit_id: document.getElementById('rec-produit').value,
         quantite_recue: parseInt(document.getElementById('rec-quantite').value),
@@ -369,7 +369,7 @@
 
     document.getElementById('form-mouvement').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await supabase.from('mouvements_comptables').insert([{
+      await db.from('mouvements_comptables').insert([{
         type: document.getElementById('mv-type').value,
         montant: parseFloat(document.getElementById('mv-montant').value),
         description: document.getElementById('mv-desc').value,
@@ -382,7 +382,7 @@
 
     // Load functions
     async function loadProducts() {
-      const { data } = await supabase.from('produits').select('*').order('created_at', { ascending: false });
+      const { data } = await db.from('produits').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
       if (!data) return;
       tbody.innerHTML = data.map(p => {
@@ -395,13 +395,13 @@
     }
 
     async function loadClients() {
-      const { data } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      const { data } = await db.from('clients').select('*').order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
     }
 
     async function loadCommandes() {
-      const { data } = await supabase.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
+      const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
       if (!data) return;
       document.getElementById('tbl-commandes').innerHTML = data.map(c => {
         let badge;
@@ -413,27 +413,27 @@
     }
 
     async function loadFournisseurs() {
-      const { data } = await supabase.from('fournisseurs').select('*').order('created_at', { ascending: false });
+      const { data } = await db.from('fournisseurs').select('*').order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
-      const { data } = await supabase.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
+      const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
       if (!data) return;
       document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td></tr>`).join('');
     }
 
     async function loadMouvements() {
-      const { data } = await supabase.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
+      const { data } = await db.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
       if (!data) return;
       document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
     }
 
     async function loadBilans() {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: bilan } = await supabase.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
-      const { data: bilanAnn } = await supabase.from('bilan_annuel').select('*').single();
+      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
+      const { data: bilanAnn } = await db.from('bilan_annuel').select('*').single();
 
       if (bilan) {
         document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
@@ -452,7 +452,7 @@
     }
 
     async function updateCommande(id, statut) {
-      await supabase.from('commandes_clients').update({ statut }).eq('id', id);
+      await db.from('commandes_clients').update({ statut }).eq('id', id);
       loadCommandes();
       loadBilans();
     }
@@ -468,7 +468,7 @@
 
       document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
 
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
           if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
           return null;
