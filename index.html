@@ -302,12 +302,17 @@
     // Forms
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await db.from('produits').insert([{
+      const { error } = await db.from('produits').insert([{
         nom: document.getElementById('prod-nom').value,
         prix: parseFloat(document.getElementById('prod-prix').value),
         quantite_stock: parseInt(document.getElementById('prod-stock').value),
         seuil_alerte: parseInt(document.getElementById('prod-seuil').value)
       }]);
+      if (error) {
+        console.error('Erreur ajout produit:', error);
+        alert('Erreur lors de l\'ajout du produit : ' + error.message);
+        return;
+      }
       document.getElementById('form-produit').reset();
       loadProducts();
       loadProductSelects();
@@ -382,8 +387,9 @@
 
     // Load functions
     async function loadProducts() {
-      const { data } = await db.from('produits').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('produits').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
+      if (error) { console.error('Erreur chargement produits:', error); }
       if (!data) return;
       tbody.innerHTML = data.map(p => {
         let badge;
