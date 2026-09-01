@@ -106,13 +106,14 @@
     </div>
 
     <nav id="main-nav" style="display:none">
-      <button class="nav-btn active" onclick="switchScreen('stock')">📦 Stock</button>
-      <button class="nav-btn" onclick="switchScreen('clients')">👥 Clients</button>
-      <button class="nav-btn" onclick="switchScreen('commandes')">📋 Commandes</button>
-      <button class="nav-btn" onclick="switchScreen('fournisseurs')">🏭 Fournisseurs</button>
-      <button class="nav-btn" onclick="switchScreen('receptions')">📥 Réceptions</button>
-      <button class="nav-btn" onclick="switchScreen('comptabilite')">💰 Comptabilité</button>
-      <button class="nav-btn" onclick="switchScreen('bilans')">📊 Bilans</button>
+      <button class="nav-btn active" onclick="switchScreen('stock', this)">📦 Stock</button>
+      <button class="nav-btn" onclick="switchScreen('clients', this)">👥 Clients</button>
+      <button class="nav-btn" onclick="switchScreen('commandes', this)">📋 Commandes</button>
+      <button class="nav-btn" onclick="switchScreen('fournisseurs', this)">🏭 Fournisseurs</button>
+      <button class="nav-btn" onclick="switchScreen('receptions', this)">📥 Réceptions</button>
+      <button class="nav-btn" onclick="switchScreen('comptabilite', this)">💰 Comptabilité</button>
+      <button class="nav-btn" onclick="switchScreen('bilans', this)">📊 Bilans</button>
+      <button class="nav-btn" id="nav-admin" onclick="switchScreen('admin', this)" style="display:none">⚙️ Admin</button>
     </nav>
 
     <div id="app-screens" style="display:none">
@@ -299,19 +300,56 @@
         </div>
       </div>
     </div>
+
+    <!-- ADMIN : souscrire / gérer les abonnements clients -->
+    <div id="screen-admin" class="screen">
+      <div class="card">
+        <h2>Souscrire un client</h2>
+        <form id="form-abonnement" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row" style="grid-column:1/-1">
+            <label>User ID Clerk du client (copié depuis le dashboard Clerk)</label>
+            <input type="text" id="ab-user-id" placeholder="user_xxxxxxxxxxxx" required>
+          </div>
+          <div class="form-row"><label>Email du client (repère)</label><input type="email" id="ab-email"></div>
+          <div class="form-row">
+            <label>Formule</label>
+            <select id="ab-plan">
+              <option value="mensuel">Mensuel — 10 000 FCFA (30 jours)</option>
+              <option value="annuel">Annuel — 100 000 FCFA (365 jours)</option>
+              <option value="personnalise">Personnalisé (choisir la date)</option>
+            </select>
+          </div>
+          <div class="form-row"><label>Date d'expiration</label><input type="date" id="ab-expiration"></div>
+          <div class="form-row">
+            <label>Statut</label>
+            <select id="ab-statut">
+              <option value="actif">Actif</option>
+              <option value="inactif">Inactif</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Enregistrer l'abonnement</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Clients abonnés</h2>
+        <table><thead><tr><th>Email</th><th>User ID</th><th>Formule</th><th>Expiration</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbl-abonnements"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
     </div><!-- /app-screens -->
   </div>
 
   <script>
     const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
+    const ADMIN_EMAILS = ["kenizaraki4@gmail.com"];
     let db = null;
 
-    function switchScreen(screenId) {
+    function switchScreen(screenId, btn) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screenId}`).classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
     }
 
     function formatCurrency(val) {
@@ -623,6 +661,72 @@
       document.getElementById('app-screens').style.display = 'block';
     }
 
+    function estAdmin(user) {
+      const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
+      return ADMIN_EMAILS.includes(email.toLowerCase());
+    }
+
+    function calculerExpiration(plan) {
+      const d = new Date();
+      if (plan === 'mensuel') d.setDate(d.getDate() + 30);
+      else if (plan === 'annuel') d.setDate(d.getDate() + 365);
+      else return document.getElementById('ab-expiration').value; // personnalisé : garde la valeur saisie
+      return d.toISOString().slice(0, 10);
+    }
+
+    document.getElementById('ab-plan').addEventListener('change', (e) => {
+      const expInput = document.getElementById('ab-expiration');
+      if (e.target.value !== 'personnalise') {
+        expInput.value = calculerExpiration(e.target.value);
+        expInput.disabled = true;
+      } else {
+        expInput.disabled = false;
+      }
+    });
+    // Pré-remplir la date d'expiration par défaut (formule mensuelle sélectionnée par défaut)
+    document.getElementById('ab-expiration').value = calculerExpiration('mensuel');
+    document.getElementById('ab-expiration').disabled = true;
+
+    document.getElementById('form-abonnement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const plan = document.getElementById('ab-plan').value;
+      const { error } = await db.from('abonnements').upsert([{
+        user_id: document.getElementById('ab-user-id').value.trim(),
+        email: document.getElementById('ab-email').value.trim(),
+        plan: plan,
+        date_expiration: document.getElementById('ab-expiration').value,
+        statut: document.getElementById('ab-statut').value
+      }], { onConflict: 'user_id' });
+      if (handleDbError("l'enregistrement de l'abonnement", error)) return;
+      document.getElementById('form-abonnement').reset();
+      document.getElementById('ab-expiration').value = calculerExpiration('mensuel');
+      document.getElementById('ab-expiration').disabled = true;
+      loadAbonnements();
+    });
+
+    async function loadAbonnements() {
+      const { data, error } = await db.from('abonnements').select('*').order('date_expiration', { ascending: true });
+      if (error) { console.error('Erreur chargement abonnements:', error); return; }
+      if (!data) return;
+      document.getElementById('tbl-abonnements').innerHTML = data.map(a => {
+        const aujourdHui = new Date().toISOString().slice(0, 10);
+        const expire = a.date_expiration && a.date_expiration < aujourdHui;
+        let badge;
+        if (a.statut === 'actif' && !expire) badge = `<span class="badge badge-ok">Actif</span>`;
+        else if (expire) badge = `<span class="badge badge-danger">Expiré</span>`;
+        else badge = `<span class="badge badge-warn">Inactif</span>`;
+        const actionLabel = a.statut === 'actif' ? 'Désactiver' : 'Activer';
+        const nouveauStatut = a.statut === 'actif' ? 'inactif' : 'actif';
+        return `<tr><td>${a.email || '-'}</td><td>${a.user_id}</td><td>${a.plan || '-'}</td><td>${a.date_expiration || '-'}</td><td>${badge}</td><td><button class="btn btn-small" onclick="toggleAbonnement('${a.user_id}', '${nouveauStatut}')">${actionLabel}</button></td></tr>`;
+      }).join('');
+    }
+
+    async function toggleAbonnement(userId, nouveauStatut) {
+      const { error } = await db.from('abonnements').update({ statut: nouveauStatut }).eq('user_id', userId);
+      if (handleDbError("la mise à jour de l'abonnement", error)) return;
+      loadAbonnements();
+    }
+
     async function updateCommande(id, statut) {
       await db.from('commandes_clients').update({ statut }).eq('id', id);
       loadCommandes();
@@ -660,7 +764,12 @@
         }
       });
 
-      const abonneActif = await verifierAbonnement(window.Clerk.user.id);
+      const admin = estAdmin(window.Clerk.user);
+      if (admin) {
+        document.getElementById('nav-admin').style.display = 'inline-flex';
+      }
+
+      const abonneActif = admin || await verifierAbonnement(window.Clerk.user.id);
       if (!abonneActif) {
         afficherPaywall();
         return; // on n'accède à aucune donnée tant que l'abonnement n'est pas actif
@@ -677,6 +786,7 @@
       loadProductSelects();
       loadClientsSelects();
       loadFournisseursSelects();
+      if (admin) loadAbonnements();
     });
   </script>
 </body>
