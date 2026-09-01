@@ -3,111 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Gestion | Administration Abonnements</title>
+  <title>E-Gestion Pro — Admin Abonnements</title>
   <meta name="robots" content="noindex, nofollow">
 
   <style>
-    :root{--bg:#050a14;--panel:#0a1220;--text:#f5f8ff;--muted:#91a0b8;--blue:#22a9ff;--blue2:#7bd5ff;--line:rgba(255,255,255,.09);--max:1000px;--danger:#ff4d4d;--warn:#ffc107;--ok:#2ecc71}
+    :root{--bg:#050a14;--panel:#0a1220;--text:#f5f8ff;--muted:#91a0b8;--blue:#22a9ff;--ok:#2ecc71;--warn:#ffc107;--danger:#ff4d4d;--line:rgba(255,255,255,.09)}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:30px 20px}
-    .container{max-width:var(--max);margin:auto}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;border-bottom:1px solid var(--line);padding-bottom:20px}
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px}
+    .container{max-width:1000px;margin:auto}
+
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--line)}
     h1{font-size:22px}
     h1 span{color:var(--blue)}
-    h2{font-size:17px;margin-bottom:16px;color:var(--blue2)}
 
     .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:24px}
+    .card h2{font-size:17px;color:var(--blue);margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
 
     .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
     .form-row label{font-size:12px;color:var(--muted);font-weight:600}
     .form-row input, .form-row select{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:white;font-size:14px;outline:none}
 
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:none;background:var(--blue);color:#02101c}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;border:none;background:var(--blue);color:#000}
     .btn:hover{opacity:.9}
-    .btn-full{width:100%}
-    .btn-danger{background:rgba(255,77,77,.15);color:var(--danger);border:1px solid rgba(255,77,77,.3)}
+    .btn-small{padding:6px 12px;font-size:12px}
 
-    table{width:100%;border-collapse:collapse;text-align:left;margin-top:10px}
-    th, td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th, td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
     th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
 
-    .badge{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;display:inline-block}
-    .badge-ok{background:rgba(46,204,113,.15);color:var(--ok);border:1px solid rgba(46,204,113,.3)}
-    .badge-danger{background:rgba(255,77,77,.15);color:var(--danger);border:1px solid rgba(255,77,77,.3)}
-    .badge-muted{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line)}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+    .badge-ok{background:rgba(46,204,113,.15);color:var(--ok)}
+    .badge-warn{background:rgba(255,193,7,.15);color:var(--warn)}
+    .badge-danger{background:rgba(255,77,77,.15);color:var(--danger)}
 
-    .auth-gate{text-align:center;padding:80px 20px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:20px}
-    .auth-gate p{color:var(--muted);margin-bottom:20px}
-
-    .msg{font-size:13px;margin-top:10px;padding:8px 12px;border-radius:8px;display:none}
-    .msg.show{display:block}
-    .msg.ok{background:rgba(46,204,113,.12);color:var(--ok)}
-    .msg.error{background:rgba(255,77,77,.12);color:var(--danger)}
+    #refuse{display:none;min-height:70vh;align-items:center;justify-content:center;flex-direction:column;text-align:center}
+    #refuse.active{display:flex}
+    #admin-content{display:none}
+    #admin-content.active{display:block}
   </style>
 
-  <script
-    async
-    crossorigin="anonymous"
-    data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
-  </script>
+  <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>E<span>-Gestion</span> &mdash; Administration Abonnements</h1>
-      <div id="auth-container"></div>
+      <h1>E<span>-Gestion</span> Pro — Admin</h1>
+      <div id="auth-btn"></div>
     </header>
 
-    <div id="gate-admin" class="auth-gate">
-      <h3>Accès restreint</h3>
-      <p>Connectez-vous avec un compte administrateur.</p>
-      <button class="btn" onclick="ouvrirConnexion()">Se connecter</button>
+    <!-- Accès refusé si l'utilisateur connecté n'est pas admin -->
+    <div id="refuse">
+      <h1>⛔ Accès refusé</h1>
+      <p style="color:var(--muted);margin-top:10px">Cette page est réservée à l'administrateur d'E-Gestion Pro.</p>
     </div>
 
-    <div id="box-admin" style="display:none;">
+    <div id="admin-content">
       <div class="card">
-        <h2>Activer un abonnement</h2>
-        <form id="form-abonnement">
-          <div class="form-row">
-            <label for="a-email">Email du client (celui utilisé pour se connecter à E-Gestion)</label>
-            <input type="email" id="a-email" required>
+        <h2>Souscrire un client</h2>
+        <form id="form-abonnement" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row" style="grid-column:1/-1">
+            <label>User ID Clerk du client (copié depuis le dashboard Clerk)</label>
+            <input type="text" id="ab-user-id" placeholder="user_xxxxxxxxxxxx" required>
           </div>
+          <div class="form-row"><label>Email du client (repère)</label><input type="email" id="ab-email"></div>
           <div class="form-row">
-            <label for="a-plan">Formule</label>
-            <select id="a-plan" required>
-              <option value="mensuel">Mensuel — 5 000 FCFA</option>
-              <option value="annuel">Annuel — 50 000 FCFA</option>
+            <label>Formule</label>
+            <select id="ab-plan">
+              <option value="mensuel">Mensuel — 10 000 FCFA (30 jours)</option>
+              <option value="annuel">Annuel — 100 000 FCFA (365 jours)</option>
+              <option value="personnalise">Personnalisé (choisir la date)</option>
             </select>
           </div>
+          <div class="form-row"><label>Date d'expiration</label><input type="date" id="ab-expiration" disabled></div>
           <div class="form-row">
-            <label for="a-debut">Date de début</label>
-            <input type="date" id="a-debut" required>
+            <label>Statut</label>
+            <select id="ab-statut">
+              <option value="actif">Actif</option>
+              <option value="inactif">Inactif</option>
+            </select>
           </div>
-          <button type="submit" class="btn btn-full">Activer l'abonnement</button>
-          <div id="msg-abonnement" class="msg"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Enregistrer l'abonnement</button>
         </form>
       </div>
 
       <div class="card">
-        <h2>Abonnements existants</h2>
-        <button onclick="chargerAbonnements()" class="btn" style="margin-bottom:14px;">🔄 Rafraîchir</button>
-        <table>
-          <thead>
-            <tr>
-              <th>Email client</th>
-              <th>Plan</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="abo-table-body">
-            <tr><td colspan="6">Chargement...</td></tr>
-          </tbody>
-        </table>
+        <h2>Clients abonnés</h2>
+        <table><thead><tr><th>Email</th><th>User ID</th><th>Formule</th><th>Expiration</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbl-abonnements"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
       </div>
     </div>
   </div>
@@ -115,164 +97,106 @@
   <script>
     const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
-    let supabaseClient = null;
+    const ADMIN_EMAILS = ["kenizaraki4@gmail.com"];
+    let db = null;
 
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[m]));
+    function handleDbError(context, error) {
+      if (!error) return false;
+      console.error(`Erreur ${context}:`, error);
+      alert(`Erreur lors de ${context} : ${error.message}`);
+      return true;
     }
 
-    function ouvrirConnexion() {
-      if (window.Clerk) window.Clerk.redirectToSignIn();
+    function estAdmin(user) {
+      const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
+      return ADMIN_EMAILS.includes(email.toLowerCase());
     }
 
-    function afficherMessage(id, texte, type) {
-      const el = document.getElementById(id);
-      el.textContent = texte;
-      el.className = `msg show ${type}`;
-      setTimeout(() => { el.className = 'msg'; }, 4000);
-    }
-
-    // Calcule la date de fin selon le plan choisi
-    function calculerDateFin(dateDebut, plan) {
-      const d = new Date(dateDebut);
-      if (plan === 'annuel') {
-        d.setFullYear(d.getFullYear() + 1);
-      } else {
-        d.setMonth(d.getMonth() + 1);
-      }
+    function calculerExpiration(plan) {
+      const d = new Date();
+      if (plan === 'mensuel') d.setDate(d.getDate() + 30);
+      else if (plan === 'annuel') d.setDate(d.getDate() + 365);
+      else return document.getElementById('ab-expiration').value; // personnalisé : garde la valeur saisie
       return d.toISOString().slice(0, 10);
     }
 
-    window.addEventListener('load', async () => {
-      while (!window.Clerk) {
-        await new Promise(r => setTimeout(r, 100));
+    document.getElementById('ab-plan').addEventListener('change', (e) => {
+      const expInput = document.getElementById('ab-expiration');
+      if (e.target.value !== 'personnalise') {
+        expInput.value = calculerExpiration(e.target.value);
+        expInput.disabled = true;
+      } else {
+        expInput.disabled = false;
       }
-      await window.Clerk.load();
-
-      const gateAdmin = document.getElementById('gate-admin');
-      const boxAdmin = document.getElementById('box-admin');
-      const authContainer = document.getElementById('auth-container');
-
-      const isAdmin = window.Clerk.user
-        && window.Clerk.user.publicMetadata
-        && window.Clerk.user.publicMetadata.role === 'admin';
-
-      if (!window.Clerk.user || !isAdmin) {
-        gateAdmin.style.display = 'block';
-        boxAdmin.style.display = 'none';
-        authContainer.innerHTML = window.Clerk.user
-          ? `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`
-          : `<button class="btn" onclick="ouvrirConnexion()">Se connecter</button>`;
-        return;
-      }
-
-      authContainer.innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
-      gateAdmin.style.display = 'none';
-      boxAdmin.style.display = 'block';
-
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        accessToken: async () => {
-          if (window.Clerk.session) {
-            return await window.Clerk.session.getToken({ skipCache: true });
-          }
-          return null;
-        }
-      });
-
-      document.getElementById('a-debut').value = new Date().toISOString().slice(0, 10);
-      chargerAbonnements();
     });
 
     document.getElementById('form-abonnement').addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      const email = document.getElementById('a-email').value.trim();
-      const plan = document.getElementById('a-plan').value;
-      const dateDebut = document.getElementById('a-debut').value;
-      const dateFin = calculerDateFin(dateDebut, plan);
-
-      const { error } = await supabaseClient.from('abonnements').insert([{
-        user_email: email,
+      const plan = document.getElementById('ab-plan').value;
+      const { error } = await db.from('abonnements').upsert([{
+        user_id: document.getElementById('ab-user-id').value.trim(),
+        email: document.getElementById('ab-email').value.trim(),
         plan: plan,
-        date_debut: dateDebut,
-        date_fin: dateFin,
-        statut: 'actif'
-      }]);
-
-      if (error) {
-        afficherMessage('msg-abonnement', "Erreur : " + error.message, 'error');
-        return;
-      }
-
-      afficherMessage('msg-abonnement', `Abonnement activé jusqu'au ${dateFin} !`, 'ok');
+        date_expiration: document.getElementById('ab-expiration').value,
+        statut: document.getElementById('ab-statut').value
+      }], { onConflict: 'user_id' });
+      if (handleDbError("l'enregistrement de l'abonnement", error)) return;
       document.getElementById('form-abonnement').reset();
-      document.getElementById('a-debut').value = new Date().toISOString().slice(0, 10);
-      chargerAbonnements();
+      document.getElementById('ab-expiration').value = calculerExpiration('mensuel');
+      document.getElementById('ab-expiration').disabled = true;
+      loadAbonnements();
     });
 
-    async function chargerAbonnements() {
-      const tbody = document.getElementById('abo-table-body');
-      if (!supabaseClient) return;
-
-      const { data: abonnements, error } = await supabaseClient
-        .from('abonnements')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="color:#ff4d4d;">Erreur : ${escapeHtml(error.message)}</td></tr>`;
-        return;
-      }
-
-      if (!abonnements || abonnements.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">Aucun abonnement pour l'instant.</td></tr>`;
-        return;
-      }
-
-      const aujourdHui = new Date().toISOString().slice(0, 10);
-
-      tbody.innerHTML = abonnements.map(a => {
+    async function loadAbonnements() {
+      const { data, error } = await db.from('abonnements').select('*').order('date_expiration', { ascending: true });
+      if (error) { console.error('Erreur chargement abonnements:', error); return; }
+      if (!data) return;
+      document.getElementById('tbl-abonnements').innerHTML = data.map(a => {
+        const aujourdHui = new Date().toISOString().slice(0, 10);
+        const expire = a.date_expiration && a.date_expiration < aujourdHui;
         let badge;
-        if (a.statut === 'annule') {
-          badge = `<span class="badge badge-muted">Annulé</span>`;
-        } else if (a.date_fin < aujourdHui || a.statut === 'expire') {
-          badge = `<span class="badge badge-danger">Expiré</span>`;
-        } else {
-          badge = `<span class="badge badge-ok">Actif</span>`;
-        }
-
-        return `
-          <tr>
-            <td>${escapeHtml(a.user_email)}</td>
-            <td>${escapeHtml(a.plan)}</td>
-            <td>${escapeHtml(a.date_debut)}</td>
-            <td>${escapeHtml(a.date_fin)}</td>
-            <td>${badge}</td>
-            <td>
-              <button onclick="annulerAbonnement('${a.id}')" class="btn btn-danger" style="padding:5px 10px;font-size:12px;">Annuler</button>
-            </td>
-          </tr>
-        `;
+        if (a.statut === 'actif' && !expire) badge = `<span class="badge badge-ok">Actif</span>`;
+        else if (expire) badge = `<span class="badge badge-danger">Expiré</span>`;
+        else badge = `<span class="badge badge-warn">Inactif</span>`;
+        const actionLabel = a.statut === 'actif' ? 'Désactiver' : 'Activer';
+        const nouveauStatut = a.statut === 'actif' ? 'inactif' : 'actif';
+        return `<tr><td>${a.email || '-'}</td><td>${a.user_id}</td><td>${a.plan || '-'}</td><td>${a.date_expiration || '-'}</td><td>${badge}</td><td><button class="btn btn-small" onclick="toggleAbonnement('${a.user_id}', '${nouveauStatut}')">${actionLabel}</button></td></tr>`;
       }).join('');
     }
 
-    async function annulerAbonnement(id) {
-      if (!confirm("Annuler cet abonnement ? Le client perdra l'accès immédiatement.")) return;
-
-      const { error } = await supabaseClient
-        .from('abonnements')
-        .update({ statut: 'annule' })
-        .eq('id', id);
-
-      if (error) {
-        alert("Erreur : " + error.message);
-      } else {
-        chargerAbonnements();
-      }
+    async function toggleAbonnement(userId, nouveauStatut) {
+      const { error } = await db.from('abonnements').update({ statut: nouveauStatut }).eq('user_id', userId);
+      if (handleDbError("la mise à jour de l'abonnement", error)) return;
+      loadAbonnements();
     }
+
+    window.addEventListener('load', async () => {
+      while (!window.Clerk) await new Promise(r => setTimeout(r, 100));
+      await window.Clerk.load();
+
+      if (!window.Clerk.user) {
+        window.Clerk.redirectToSignIn();
+        return;
+      }
+
+      document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
+
+      if (!estAdmin(window.Clerk.user)) {
+        document.getElementById('refuse').classList.add('active');
+        return;
+      }
+
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        accessToken: async () => {
+          if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
+          return null;
+        }
+      });
+
+      document.getElementById('admin-content').classList.add('active');
+      document.getElementById('ab-expiration').value = calculerExpiration('mensuel');
+      loadAbonnements();
+    });
   </script>
 </body>
 </html>
