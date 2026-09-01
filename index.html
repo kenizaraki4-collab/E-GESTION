@@ -474,6 +474,19 @@
 
       document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
 
+      // DIAGNOSTIC : affiche le contenu du token Clerk pour vérifier qu'il est bien reconnu par Supabase
+      try {
+        const debugToken = await window.Clerk.session.getToken({ skipCache: true });
+        if (debugToken) {
+          const payload = JSON.parse(atob(debugToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+          console.log('🔑 Token Clerk décodé (vérifier "role" et "aud") :', payload);
+        } else {
+          console.warn('⚠️ Aucun token Clerk obtenu (getToken a renvoyé null/undefined)');
+        }
+      } catch (e) {
+        console.error('❌ Erreur en récupérant/décodant le token Clerk :', e);
+      }
+
       db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
           if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
