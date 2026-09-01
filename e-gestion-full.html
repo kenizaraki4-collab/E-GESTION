@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Gestion Pro — Comptabilité & Commandes</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    :root{--bg:#050a14;--panel:#0a1220;--text:#f5f8ff;--muted:#91a0b8;--blue:#22a9ff;--ok:#2ecc71;--warn:#ffc107;--danger:#ff4d4d;--line:rgba(255,255,255,.09)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px}
+    .container{max-width:1200px;margin:auto}
+    
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+    h1{font-size:22px}
+    h1 span{color:var(--blue)}
+    
+    nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;border-bottom:1px solid var(--line);padding-bottom:15px}
+    .nav-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;font-weight:600;font-size:13px;transition:all .2s}
+    .nav-btn.active{background:var(--blue);color:#000;border-color:var(--blue)}
+    .nav-btn:hover{border-color:var(--blue)}
+    
+    .screen{display:none}
+    .screen.active{display:block}
+    
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:24px}
+    .card h2{font-size:17px;color:var(--blue);margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
+    
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:24px}
+    .stat{background:rgba(34,169,255,.08);border:1px solid var(--line);border-radius:12px;padding:16px}
+    .stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600}
+    .stat-value{font-size:24px;font-weight:800;margin-top:6px}
+    .stat-value.ok{color:var(--ok)}
+    .stat-value.warn{color:var(--warn)}
+    .stat-value.danger{color:var(--danger)}
+    
+    .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+    .form-row label{font-size:12px;color:var(--muted);font-weight:600}
+    .form-row input, .form-row select{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:white;font-size:14px;outline:none}
+    
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;border:none;background:var(--blue);color:#000}
+    .btn:hover{opacity:.9}
+    .btn-full{width:100%}
+    .btn-small{padding:6px 12px;font-size:12px}
+    
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th, td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
+    th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
+    
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+    .badge-ok{background:rgba(46,204,113,.15);color:var(--ok)}
+    .badge-warn{background:rgba(255,193,7,.15);color:var(--warn)}
+    .badge-danger{background:rgba(255,77,77,.15);color:var(--danger)}
+    
+    .alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px}
+    .alert.ok{background:rgba(46,204,113,.12);color:var(--ok);border:1px solid var(--ok)}
+    .alert.error{background:rgba(255,77,77,.12);color:var(--danger);border:1px solid var(--danger)}
+  </style>
+
+  <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>E<span>-Gestion</span> Pro</h1>
+      <div id="auth-btn"></div>
+    </header>
+
+    <nav>
+      <button class="nav-btn active" onclick="switchScreen('stock')">📦 Stock</button>
+      <button class="nav-btn" onclick="switchScreen('clients')">👥 Clients</button>
+      <button class="nav-btn" onclick="switchScreen('commandes')">📋 Commandes</button>
+      <button class="nav-btn" onclick="switchScreen('fournisseurs')">🏭 Fournisseurs</button>
+      <button class="nav-btn" onclick="switchScreen('receptions')">📥 Réceptions</button>
+      <button class="nav-btn" onclick="switchScreen('comptabilite')">💰 Comptabilité</button>
+      <button class="nav-btn" onclick="switchScreen('bilans')">📊 Bilans</button>
+    </nav>
+
+    <!-- STOCK -->
+    <div id="screen-stock" class="screen active">
+      <div class="card">
+        <h2>Ajouter un produit</h2>
+        <form id="form-produit" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Nom</label><input type="text" id="prod-nom" required></div>
+          <div class="form-row"><label>Prix (FCFA)</label><input type="number" id="prod-prix" step="0.01" required></div>
+          <div class="form-row"><label>Stock</label><input type="number" id="prod-stock" required></div>
+          <div class="form-row"><label>Seuil alerte</label><input type="number" id="prod-seuil" value="10"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le produit</button>
+        </form>
+      </div>
+      
+      <div class="card">
+        <h2>État du stock</h2>
+        <table><thead><tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Statut</th></tr></thead><tbody id="tbl-stock"><tr><td colspan="4">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="screen-clients" class="screen">
+      <div class="card">
+        <h2>Ajouter un client</h2>
+        <form id="form-client" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Nom</label><input type="text" id="cli-nom" required></div>
+          <div class="form-row"><label>Téléphone</label><input type="tel" id="cli-tel"></div>
+          <div class="form-row"><label>Email</label><input type="email" id="cli-email"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le client</button>
+        </form>
+      </div>
+      
+      <div class="card">
+        <h2>Liste des clients</h2>
+        <table><thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th></tr></thead><tbody id="tbl-clients"><tr><td colspan="3">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- COMMANDES CLIENTS -->
+    <div id="screen-commandes" class="screen">
+      <div class="card">
+        <h2>Créer une commande</h2>
+        <form id="form-commande" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Client</label><select id="cmd-client" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label>Produit</label><select id="cmd-produit" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label>Quantité</label><input type="number" id="cmd-quantite" required></div>
+          <div class="form-row"><label>Prix unitaire</label><input type="number" id="cmd-prix" step="0.01" required></div>
+          <div class="form-row"><label>Date prévue</label><input type="date" id="cmd-date"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Créer la commande</button>
+        </form>
+      </div>
+      
+      <div class="card">
+        <h2>Commandes en cours</h2>
+        <table><thead><tr><th>Client</th><th>Produit</th><th>Qty</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbl-commandes"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- FOURNISSEURS -->
+    <div id="screen-fournisseurs" class="screen">
+      <div class="card">
+        <h2>Ajouter un fournisseur</h2>
+        <form id="form-fournisseur" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Nom</label><input type="text" id="fourn-nom" required></div>
+          <div class="form-row"><label>Téléphone</label><input type="tel" id="fourn-tel"></div>
+          <div class="form-row"><label>Email</label><input type="email" id="fourn-email"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le fournisseur</button>
+        </form>
+      </div>
+      
+      <div class="card">
+        <h2>Liste des fournisseurs</h2>
+        <table><thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th></tr></thead><tbody id="tbl-fournisseurs"><tr><td colspan="3">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- RÉCEPTIONS FOURNISSEURS -->
+    <div id="screen-receptions" class="screen">
+      <div class="card">
+        <h2>Enregistrer une réception</h2>
+        <form id="form-reception" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Fournisseur</label><select id="rec-fournisseur" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label>Produit</label><select id="rec-produit" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label>Quantité reçue</label><input type="number" id="rec-quantite" required></div>
+          <div class="form-row"><label>Prix unitaire achat</label><input type="number" id="rec-prix" step="0.01" required></div>
+          <div class="form-row"><label>Date réception</label><input type="date" id="rec-date" required></div>
+          <div class="form-row"><label>N° Facture</label><input type="text" id="rec-facture"></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Enregistrer la réception</button>
+        </form>
+      </div>
+      
+      <div class="card">
+        <h2>Historique des réceptions</h2>
+        <table><thead><tr><th>Fournisseur</th><th>Produit</th><th>Qty</th><th>Total achat</th><th>Date</th></tr></thead><tbody id="tbl-receptions"><tr><td colspan="5">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- COMPTABILITÉ -->
+    <div id="screen-comptabilite" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Ventes du jour</div>
+          <div class="stat-value ok" id="stat-ventes-jour">0 FCFA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Achats du jour</div>
+          <div class="stat-value warn" id="stat-achats-jour">0 FCFA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Profit du jour</div>
+          <div class="stat-value" id="stat-profit-jour">0 FCFA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Commandes aujourd'hui</div>
+          <div class="stat-value" id="stat-cmds-jour">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Mouvements comptables</h2>
+        <form id="form-mouvement" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label>Type</label><select id="mv-type" required><option value="vente">Vente</option><option value="achat">Achat</option><option value="depense">Dépense</option><option value="retour_client">Retour client</option></select></div>
+          <div class="form-row"><label>Montant (FCFA)</label><input type="number" id="mv-montant" step="0.01" required></div>
+          <div class="form-row"><label>Description</label><input type="text" id="mv-desc" required></div>
+          <button type="submit" class="btn" style="grid-column:1/-1">Enregistrer le mouvement</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Flux du mois</h2>
+        <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Montant</th></tr></thead><tbody id="tbl-mouvements"><tr><td colspan="4">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- BILANS -->
+    <div id="screen-bilans" class="screen">
+      <div class="card">
+        <h2>Bilan journalier</h2>
+        <div class="grid">
+          <div class="stat">
+            <div class="stat-label">Total ventes</div>
+            <div class="stat-value ok" id="bilan-ventes">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Total achats</div>
+            <div class="stat-value warn" id="bilan-achats">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Dépenses</div>
+            <div class="stat-value danger" id="bilan-depenses">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Profit net</div>
+            <div class="stat-value ok" id="bilan-profit">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Commandes</div>
+            <div class="stat-value" id="bilan-cmds">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Réceptions</div>
+            <div class="stat-value" id="bilan-recs">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Bilan annuel</h2>
+        <div class="grid">
+          <div class="stat">
+            <div class="stat-label">Ventes annuelles</div>
+            <div class="stat-value ok" id="bilan-ann-ventes">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Achats annuels</div>
+            <div class="stat-value warn" id="bilan-ann-achats">0 FCFA</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Profit annuel</div>
+            <div class="stat-value ok" id="bilan-ann-profit">0 FCFA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
+    const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
+    let supabase = null;
+
+    function switchScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(`screen-${screenId}`).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function formatCurrency(val) {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(val || 0);
+    }
+
+    // Charger les produits dans les selects
+    async function loadProductSelects() {
+      const { data } = await supabase.from('produits').select('id, nom');
+      if (data) {
+        document.getElementById('cmd-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+        document.getElementById('rec-produit').innerHTML = data.map(p => `<option value="${p.id}">${p.nom}</option>`).join('');
+      }
+    }
+
+    // Charger les clients/fournisseurs dans les selects
+    async function loadClientsSelects() {
+      const { data } = await supabase.from('clients').select('id, nom');
+      if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+    }
+
+    async function loadFournisseursSelects() {
+      const { data } = await supabase.from('fournisseurs').select('id, nom');
+      if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
+    }
+
+    // Forms
+    document.getElementById('form-produit').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('produits').insert([{
+        nom: document.getElementById('prod-nom').value,
+        prix: parseFloat(document.getElementById('prod-prix').value),
+        quantite_stock: parseInt(document.getElementById('prod-stock').value),
+        seuil_alerte: parseInt(document.getElementById('prod-seuil').value)
+      }]);
+      document.getElementById('form-produit').reset();
+      loadProducts();
+      loadProductSelects();
+    });
+
+    document.getElementById('form-client').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('clients').insert([{
+        nom: document.getElementById('cli-nom').value,
+        telephone: document.getElementById('cli-tel').value,
+        email: document.getElementById('cli-email').value
+      }]);
+      document.getElementById('form-client').reset();
+      loadClients();
+      loadClientsSelects();
+    });
+
+    document.getElementById('form-commande').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('commandes_clients').insert([{
+        client_id: document.getElementById('cmd-client').value,
+        produit_id: document.getElementById('cmd-produit').value,
+        quantite_commandee: parseInt(document.getElementById('cmd-quantite').value),
+        prix_unitaire: parseFloat(document.getElementById('cmd-prix').value),
+        date_commande: new Date().toISOString().slice(0, 10),
+        date_livraison_prevue: document.getElementById('cmd-date').value
+      }]);
+      document.getElementById('form-commande').reset();
+      loadCommandes();
+      loadBilans();
+    });
+
+    document.getElementById('form-fournisseur').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('fournisseurs').insert([{
+        nom: document.getElementById('fourn-nom').value,
+        telephone: document.getElementById('fourn-tel').value,
+        email: document.getElementById('fourn-email').value
+      }]);
+      document.getElementById('form-fournisseur').reset();
+      loadFournisseurs();
+      loadFournisseursSelects();
+    });
+
+    document.getElementById('form-reception').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('receptions_fournisseurs').insert([{
+        fournisseur_id: document.getElementById('rec-fournisseur').value,
+        produit_id: document.getElementById('rec-produit').value,
+        quantite_recue: parseInt(document.getElementById('rec-quantite').value),
+        prix_unitaire_achat: parseFloat(document.getElementById('rec-prix').value),
+        date_reception: document.getElementById('rec-date').value,
+        numero_facture: document.getElementById('rec-facture').value
+      }]);
+      document.getElementById('form-reception').reset();
+      loadReceptions();
+      loadBilans();
+    });
+
+    document.getElementById('form-mouvement').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await supabase.from('mouvements_comptables').insert([{
+        type: document.getElementById('mv-type').value,
+        montant: parseFloat(document.getElementById('mv-montant').value),
+        description: document.getElementById('mv-desc').value,
+        date_mouvement: new Date().toISOString().slice(0, 10)
+      }]);
+      document.getElementById('form-mouvement').reset();
+      loadMouvements();
+      loadBilans();
+    });
+
+    // Load functions
+    async function loadProducts() {
+      const { data } = await supabase.from('produits').select('*').order('created_at', { ascending: false });
+      const tbody = document.getElementById('tbl-stock');
+      if (!data) return;
+      tbody.innerHTML = data.map(p => {
+        let badge;
+        if (p.quantite_stock === 0) badge = `<span class="badge badge-danger">Rupture</span>`;
+        else if (p.quantite_stock <= p.seuil_alerte) badge = `<span class="badge badge-warn">Stock bas</span>`;
+        else badge = `<span class="badge badge-ok">OK</span>`;
+        return `<tr><td>${p.nom}</td><td>${formatCurrency(p.prix)}</td><td>${p.quantite_stock} u.</td><td>${badge}</td></tr>`;
+      }).join('');
+    }
+
+    async function loadClients() {
+      const { data } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+      if (!data) return;
+      document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
+    }
+
+    async function loadCommandes() {
+      const { data } = await supabase.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
+      if (!data) return;
+      document.getElementById('tbl-commandes').innerHTML = data.map(c => {
+        let badge;
+        if (c.statut === 'livree') badge = `<span class="badge badge-ok">Livrée</span>`;
+        else if (c.statut === 'partiellement_livree') badge = `<span class="badge badge-warn">Partielle</span>`;
+        else badge = `<span class="badge">En attente</span>`;
+        return `<tr><td>${c.client.nom}</td><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
+      }).join('');
+    }
+
+    async function loadFournisseurs() {
+      const { data } = await supabase.from('fournisseurs').select('*').order('created_at', { ascending: false });
+      if (!data) return;
+      document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
+    }
+
+    async function loadReceptions() {
+      const { data } = await supabase.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
+      if (!data) return;
+      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td></tr>`).join('');
+    }
+
+    async function loadMouvements() {
+      const { data } = await supabase.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
+      if (!data) return;
+      document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
+    }
+
+    async function loadBilans() {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: bilan } = await supabase.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
+      const { data: bilanAnn } = await supabase.from('bilan_annuel').select('*').single();
+
+      if (bilan) {
+        document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
+        document.getElementById('bilan-achats').textContent = formatCurrency(bilan.total_achats);
+        document.getElementById('bilan-depenses').textContent = formatCurrency(bilan.total_depenses);
+        document.getElementById('bilan-profit').textContent = formatCurrency(bilan.profit_net);
+        document.getElementById('bilan-cmds').textContent = bilan.nombre_commandes || '0';
+        document.getElementById('bilan-recs').textContent = bilan.nombre_receptions || '0';
+      }
+
+      if (bilanAnn) {
+        document.getElementById('bilan-ann-ventes').textContent = formatCurrency(bilanAnn.total_ventes_annuel);
+        document.getElementById('bilan-ann-achats').textContent = formatCurrency(bilanAnn.total_achats_annuel);
+        document.getElementById('bilan-ann-profit').textContent = formatCurrency(bilanAnn.profit_net_annuel);
+      }
+    }
+
+    async function updateCommande(id, statut) {
+      await supabase.from('commandes_clients').update({ statut }).eq('id', id);
+      loadCommandes();
+      loadBilans();
+    }
+
+    window.addEventListener('load', async () => {
+      while (!window.Clerk) await new Promise(r => setTimeout(r, 100));
+      await window.Clerk.load();
+
+      if (!window.Clerk.user) {
+        window.Clerk.redirectToSignIn();
+        return;
+      }
+
+      document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
+
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        accessToken: async () => {
+          if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
+          return null;
+        }
+      });
+
+      loadProducts();
+      loadClients();
+      loadCommandes();
+      loadFournisseurs();
+      loadReceptions();
+      loadMouvements();
+      loadBilans();
+      loadProductSelects();
+      loadClientsSelects();
+      loadFournisseursSelects();
+    });
+  </script>
+</body>
+</html>
