@@ -70,7 +70,15 @@
     .plan .plan-price{font-size:26px;font-weight:800;margin-bottom:4px}
     .plan .plan-period{font-size:12px;color:var(--muted);margin-bottom:16px}
     .content-locked{display:none !important}
+
+    /* TABLEAU DE BORD */
+    .dash-charts{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:20px}
+    @media(max-width:800px){.dash-charts{grid-template-columns:1fr}}
+    .dash-charts .card{margin-bottom:0}
+    .chart-wrap{position:relative;height:260px}
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
   <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -106,7 +114,8 @@
     </div>
 
     <nav id="main-nav" style="display:none">
-      <button class="nav-btn active" onclick="switchScreen('stock', this)">📦 Stock</button>
+      <button class="nav-btn active" onclick="switchScreen('dashboard', this)">🏠 Tableau de bord</button>
+      <button class="nav-btn" onclick="switchScreen('stock', this)">📦 Stock</button>
       <button class="nav-btn" onclick="switchScreen('clients', this)">👥 Clients</button>
       <button class="nav-btn" onclick="switchScreen('commandes', this)">📋 Commandes</button>
       <button class="nav-btn" onclick="switchScreen('fournisseurs', this)">🏭 Fournisseurs</button>
@@ -116,8 +125,37 @@
     </nav>
 
     <div id="app-screens" style="display:none">
+    <!-- TABLEAU DE BORD -->
+    <div id="screen-dashboard" class="screen active">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Ventes du jour</div>
+          <div class="stat-value ok" id="dash-ventes">0 FCFA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Achats du jour</div>
+          <div class="stat-value warn" id="dash-achats">0 FCFA</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Bénéfice du jour</div>
+          <div class="stat-value ok" id="dash-profit">0 FCFA</div>
+        </div>
+      </div>
+
+      <div class="dash-charts">
+        <div class="card">
+          <h2>Vue d'ensemble (7 derniers jours)</h2>
+          <div class="chart-wrap"><canvas id="chart-overview"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>Répartition des ventes</h2>
+          <div class="chart-wrap"><canvas id="chart-repartition"></canvas></div>
+        </div>
+      </div>
+    </div>
+
     <!-- STOCK -->
-    <div id="screen-stock" class="screen active">
+    <div id="screen-stock" class="screen">
       <div class="card">
         <h2>Ajouter un produit</h2>
         <form id="form-produit" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -306,6 +344,7 @@
     const SUPABASE_URL = "https://pmxtqebppwpbgznmtiai.supabase.co";
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
     let db = null;
+    let currentUserId = null;
 
     function switchScreen(screenId, btn) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -370,6 +409,7 @@
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('produits').insert([{
+        compte_id: currentUserId,
         nom: document.getElementById('prod-nom').value,
         prix: parseFloat(document.getElementById('prod-prix').value),
         quantite_stock: parseInt(document.getElementById('prod-stock').value),
@@ -384,6 +424,7 @@
     document.getElementById('form-client').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('clients').insert([{
+        compte_id: currentUserId,
         nom: document.getElementById('cli-nom').value,
         telephone: document.getElementById('cli-tel').value,
         email: document.getElementById('cli-email').value
@@ -397,6 +438,7 @@
     document.getElementById('form-commande').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('commandes_clients').insert([{
+        compte_id: currentUserId,
         client_id: document.getElementById('cmd-client').value,
         produit_id: document.getElementById('cmd-produit').value,
         quantite_commandee: parseInt(document.getElementById('cmd-quantite').value),
@@ -413,6 +455,7 @@
     document.getElementById('form-fournisseur').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('fournisseurs').insert([{
+        compte_id: currentUserId,
         nom: document.getElementById('fourn-nom').value,
         telephone: document.getElementById('fourn-tel').value,
         email: document.getElementById('fourn-email').value
@@ -426,6 +469,7 @@
     document.getElementById('form-reception').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('receptions_fournisseurs').insert([{
+        compte_id: currentUserId,
         fournisseur_id: document.getElementById('rec-fournisseur').value,
         produit_id: document.getElementById('rec-produit').value,
         quantite_recue: parseInt(document.getElementById('rec-quantite').value),
@@ -442,6 +486,7 @@
     document.getElementById('form-mouvement').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('mouvements_comptables').insert([{
+        compte_id: currentUserId,
         type: document.getElementById('mv-type').value,
         montant: parseFloat(document.getElementById('mv-montant').value),
         description: document.getElementById('mv-desc').value,
@@ -623,6 +668,88 @@
       document.getElementById('app-screens').style.display = 'block';
     }
 
+    let chartOverview = null;
+    let chartRepartition = null;
+
+    async function loadDashboard() {
+      const today = new Date().toISOString().slice(0, 10);
+
+      // Cartes du jour (réutilise le bilan journalier déjà calculé)
+      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).maybeSingle();
+      document.getElementById('dash-ventes').textContent = formatCurrency(bilan?.total_ventes || 0);
+      document.getElementById('dash-achats').textContent = formatCurrency(bilan?.total_achats || 0);
+      document.getElementById('dash-profit').textContent = formatCurrency(bilan?.profit_net || 0);
+
+      // Vue d'ensemble : ventes vs achats sur les 7 derniers jours
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      const { data: bilans7j } = await db.from('bilans_journaliers')
+        .select('date_bilan, total_ventes, total_achats')
+        .gte('date_bilan', sevenDaysAgo.toISOString().slice(0, 10))
+        .order('date_bilan', { ascending: true });
+
+      const labels = [];
+      const ventesData = [];
+      const achatsData = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const iso = d.toISOString().slice(0, 10);
+        labels.push(d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
+        const jour = bilans7j?.find(b => b.date_bilan === iso);
+        ventesData.push(jour?.total_ventes || 0);
+        achatsData.push(jour?.total_achats || 0);
+      }
+
+      if (chartOverview) chartOverview.destroy();
+      chartOverview = new Chart(document.getElementById('chart-overview'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Ventes', data: ventesData, borderColor: '#22a9ff', backgroundColor: 'rgba(34,169,255,.15)', tension: .3, fill: true },
+            { label: 'Achats', data: achatsData, borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,.1)', tension: .3, fill: true }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#f5f8ff' } } },
+          scales: {
+            x: { ticks: { color: '#91a0b8' }, grid: { color: 'rgba(255,255,255,.06)' } },
+            y: { ticks: { color: '#91a0b8' }, grid: { color: 'rgba(255,255,255,.06)' } }
+          }
+        }
+      });
+
+      // Répartition des ventes : top 5 produits par chiffre d'affaires (commandes)
+      const { data: commandes } = await db.from('commandes_clients')
+        .select('quantite_commandee, prix_unitaire, produit:produits(nom)');
+
+      const parProduit = {};
+      (commandes || []).forEach(c => {
+        const nom = c.produit?.nom || 'Autre';
+        parProduit[nom] = (parProduit[nom] || 0) + (c.quantite_commandee * c.prix_unitaire);
+      });
+      const top5 = Object.entries(parProduit).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+      if (chartRepartition) chartRepartition.destroy();
+      chartRepartition = new Chart(document.getElementById('chart-repartition'), {
+        type: 'doughnut',
+        data: {
+          labels: top5.map(p => p[0]),
+          datasets: [{
+            data: top5.map(p => p[1]),
+            backgroundColor: ['#22a9ff', '#2ecc71', '#ffc107', '#ff4d4d', '#9b59b6'],
+            borderColor: '#0a1220', borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#f5f8ff', boxWidth: 12 } } }
+        }
+      });
+    }
+
     async function updateCommande(id, statut) {
       await db.from('commandes_clients').update({ statut }).eq('id', id);
       loadCommandes();
@@ -639,6 +766,7 @@
       }
 
       document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
+      currentUserId = window.Clerk.user.id;
 
       // DIAGNOSTIC : affiche le contenu du token Clerk pour vérifier qu'il est bien reconnu par Supabase
       try {
@@ -667,6 +795,7 @@
       }
       afficherApp();
 
+      loadDashboard();
       loadProducts();
       loadClients();
       loadCommandes();
