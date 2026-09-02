@@ -56,7 +56,7 @@
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:22px;box-shadow:var(--shadow)}
     .card h2{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
 
-    /* GRILLE ET CARTES DE STATISTIQUES REARRANGEES (STYLE DE L'IMAGE) */
+    /* GRILLE ET CARTES DE STATISTIQUES DYNAMIQUES */
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
     .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;position:relative}
     .stat-label{font-size:13px;color:var(--muted);font-weight:600}
@@ -75,7 +75,6 @@
     .btn:hover{opacity:.92}
     .btn-full{width:100%}
     .btn-small{padding:6px 12px;font-size:12px;box-shadow:none}
-    .btn-ghost{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:none}
 
     table{width:100%;border-collapse:collapse;margin-top:10px}
     th, td{padding:11px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
@@ -86,10 +85,6 @@
     .badge-ok{background:var(--ok-soft);color:var(--ok)}
     .badge-warn{background:var(--warn-soft);color:var(--warn)}
     .badge-danger{background:var(--danger-soft);color:var(--danger)}
-
-    .alert{padding:12px 16px;border-radius:99px;margin-bottom:16px;font-size:13px}
-    .alert.ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
-    .alert.error{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
 
     /* PAYWALL */
     #paywall{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px 20px;width:100%}
@@ -207,28 +202,28 @@
         </div>
 
     <div id="app-screens" style="display:none">
-    <!-- TABLEAU DE BORD (AVEC LES 4 CARTES COMPATIBLES AVEC L'IMAGE) -->
+    <!-- TABLEAU DE BORD (POURCENTAGES DYNAMIQUES CALCULÉS) -->
     <div id="screen-dashboard" class="screen active">
       <div class="grid">
         <div class="stat">
           <div class="stat-label">Chiffre d'affaires</div>
           <div class="stat-value" id="dash-ca">0 FCFA</div>
-          <div class="stat-trend up">+18% ce mois</div>
+          <div class="stat-trend" id="trend-ca">--</div>
         </div>
         <div class="stat">
           <div class="stat-label">Total ventes</div>
           <div class="stat-value" id="dash-tot-ventes">0</div>
-          <div class="stat-trend up">+12% ce mois</div>
+          <div class="stat-trend" id="trend-ventes">--</div>
         </div>
         <div class="stat">
           <div class="stat-label">Total achats</div>
           <div class="stat-value" id="dash-tot-achats">0</div>
-          <div class="stat-trend up">+8% ce mois</div>
+          <div class="stat-trend" id="trend-achats">--</div>
         </div>
         <div class="stat">
           <div class="stat-label">Produits en stock</div>
           <div class="stat-value" id="dash-stock-qty">0</div>
-          <div class="stat-trend up">+5% ce mois</div>
+          <div class="stat-trend neutral" id="trend-stock">Articles disponibles</div>
         </div>
       </div>
 
@@ -292,7 +287,7 @@
         <div class="stat">
           <div class="stat-label">Total Clients</div>
           <div class="stat-value" id="stat-cli-total">0</div>
-          <div class="stat-trend up">+10% ce mois</div>
+          <div class="stat-trend" id="trend-clients">--</div>
         </div>
         <div class="stat">
           <div class="stat-label">Clients Actifs</div>
@@ -328,7 +323,7 @@
         <div class="stat">
           <div class="stat-label">Total Commandes</div>
           <div class="stat-value" id="stat-cmd-total">0</div>
-          <div class="stat-trend up">+15% ce mois</div>
+          <div class="stat-trend" id="trend-cmd-total">--</div>
         </div>
         <div class="stat">
           <div class="stat-label">En Attente</div>
@@ -549,6 +544,37 @@
       return new Intl.NumberFormat('fr-FR').format(val || 0) + " FCFA";
     }
 
+    // FONCTION POUR CALCULER ET AFFICHER LA VARIATION EN POURCENTAGE RÉEL
+    function renderTrend(elementId, currentVal, prevVal) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      if (!prevVal || prevVal === 0) {
+        if (currentVal > 0) {
+          el.className = "stat-trend up";
+          el.textContent = "+100% ce mois";
+        } else {
+          el.className = "stat-trend neutral";
+          el.textContent = "0% ce mois";
+        }
+        return;
+      }
+
+      const diff = ((currentVal - prevVal) / prevVal) * 100;
+      const rounded = Math.round(diff * 10) / 10;
+
+      if (rounded > 0) {
+        el.className = "stat-trend up";
+        el.textContent = `+${rounded}% ce mois`;
+      } else if (rounded < 0) {
+        el.className = "stat-trend down";
+        el.textContent = `${rounded}% ce mois`;
+      } else {
+        el.className = "stat-trend neutral";
+        el.textContent = "0% ce mois";
+      }
+    }
+
     async function loadProductSelects() {
       const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
       if (data) {
@@ -592,7 +618,7 @@
       return true;
     }
 
-    // Forms Handlers
+    // Handlers de formulaires
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('produits').insert([{
@@ -688,13 +714,12 @@
       loadBilans();
     });
 
-    // Chargement dynamique des données + statistiques
+    // Chargement dynamique des données
     async function loadProducts() {
       const { data, error } = await db.from('produits').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
       if (!data) return;
 
-      // Stats Stock
       let totalRef = data.length;
       let totalUnites = 0;
       let valeurStock = 0;
@@ -720,20 +745,27 @@
       }).join('');
     }
 
-    let commandesCache = [];
-    let receptionsCache = [];
-
     async function loadClients() {
-      const { data } = await db.from('clients').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
+      const { data } = await db.from('clients').select('*, created_at').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('stat-cli-total').textContent = data.length;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
+
+      // Calcul variation clients ce mois-ci vs mois dernier
+      const now = new Date();
+      const thisMonthPrefix = now.toISOString().slice(0, 7);
+      const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthPrefix = prevMonthDate.toISOString().slice(0, 7);
+
+      const thisMonthClients = data.filter(c => c.created_at && c.created_at.startsWith(thisMonthPrefix)).length;
+      const prevMonthClients = data.filter(c => c.created_at && c.created_at.startsWith(prevMonthPrefix)).length;
+
+      renderTrend('trend-clients', thisMonthClients, prevMonthClients);
     }
 
     async function loadCommandes() {
       const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_commande', { ascending: false });
       if (!data) return;
-      commandesCache = data;
 
       let attente = 0;
       let livrees = 0;
@@ -755,6 +787,17 @@
         let badge = c.statut === 'livree' ? `<span class="badge badge-ok">Livrée</span>` : `<span class="badge">En attente</span>`;
         return `<tr><td>${c.client ? c.client.nom : '-'}</td><td>${c.produit ? c.produit.nom : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande || c.quantite_commandee * c.prix_unitaire)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
       }).join('');
+
+      // Variation commandes mois-ci vs mois dernier
+      const now = new Date();
+      const thisMonthPrefix = now.toISOString().slice(0, 7);
+      const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthPrefix = prevMonthDate.toISOString().slice(0, 7);
+
+      const thisMonthCmds = data.filter(c => c.date_commande && c.date_commande.startsWith(thisMonthPrefix)).length;
+      const prevMonthCmds = data.filter(c => c.date_commande && c.date_commande.startsWith(prevMonthPrefix)).length;
+
+      renderTrend('trend-cmd-total', thisMonthCmds, prevMonthCmds);
     }
 
     async function loadFournisseurs() {
@@ -767,7 +810,6 @@
     async function loadReceptions() {
       const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_reception', { ascending: false });
       if (!data) return;
-      receptionsCache = data;
 
       let totalQty = 0;
       let totalCout = 0;
@@ -841,8 +883,8 @@
 
     async function loadDashboard() {
       // Données globales pour les 4 cartes du tableau de bord
-      const { data: cmdData } = await db.from('commandes_clients').select('quantite_commandee, prix_unitaire').eq('compte_id', currentUserId);
-      const { data: recData } = await db.from('receptions_fournisseurs').select('quantite_recue').eq('compte_id', currentUserId);
+      const { data: cmdData } = await db.from('commandes_clients').select('quantite_commandee, prix_unitaire, date_commande').eq('compte_id', currentUserId);
+      const { data: recData } = await db.from('receptions_fournisseurs').select('quantite_recue, date_reception').eq('compte_id', currentUserId);
       const { data: prodData } = await db.from('produits').select('quantite_stock').eq('compte_id', currentUserId);
 
       let caTotal = 0;
@@ -857,6 +899,33 @@
       document.getElementById('dash-tot-ventes').textContent = countVentes;
       document.getElementById('dash-tot-achats').textContent = countAchats;
       document.getElementById('dash-stock-qty').textContent = totalStock;
+
+      // COMPARAISON AVEC LE MOIS PRÉCÉDENT POUR RENDER LES POURCENTAGES RÉELS
+      const now = new Date();
+      const thisMonthPrefix = now.toISOString().slice(0, 7);
+      const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevMonthPrefix = prevMonthDate.toISOString().slice(0, 7);
+
+      // Chiffre d'affaires
+      let caThisMonth = 0;
+      let caPrevMonth = 0;
+      (cmdData || []).forEach(c => {
+        if (c.date_commande) {
+          if (c.date_commande.startsWith(thisMonthPrefix)) caThisMonth += (c.quantite_commandee * c.prix_unitaire);
+          else if (c.date_commande.startsWith(prevMonthPrefix)) caPrevMonth += (c.quantite_commandee * c.prix_unitaire);
+        }
+      });
+      renderTrend('trend-ca', caThisMonth, caPrevMonth);
+
+      // Nombre de ventes
+      const ventesThisMonth = (cmdData || []).filter(c => c.date_commande && c.date_commande.startsWith(thisMonthPrefix)).length;
+      const ventesPrevMonth = (cmdData || []).filter(c => c.date_commande && c.date_commande.startsWith(prevMonthPrefix)).length;
+      renderTrend('trend-ventes', ventesThisMonth, ventesPrevMonth);
+
+      // Nombre d'achats
+      const achatsThisMonth = (recData || []).filter(r => r.date_reception && r.date_reception.startsWith(thisMonthPrefix)).length;
+      const achatsPrevMonth = (recData || []).filter(r => r.date_reception && r.date_reception.startsWith(prevMonthPrefix)).length;
+      renderTrend('trend-achats', achatsThisMonth, achatsPrevMonth);
 
       // Graphique 7 jours
       const sevenDaysAgo = new Date();
