@@ -45,7 +45,7 @@
     .main-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
     .container{max-width:1200px;width:100%;margin:0 auto;padding:24px 28px 40px}
 
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap}
+    header{display:flex;justify-space-between;align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap}
     h1{font-size:21px;font-weight:700;letter-spacing:-.01em}
     h1 span{color:var(--blue)}
     header .subtitle{font-size:12.5px;color:var(--muted);margin-top:2px;font-weight:500}
@@ -91,7 +91,7 @@
     .badge-warn{background:var(--warn-soft);color:var(--warn)}
     .badge-danger{background:var(--danger-soft);color:var(--danger)}
 
-    .alert{padding:12px 16px;border-radius:9px;margin-bottom:16px;font-size:13px}
+    .alert{padding:12px 16px;border-radius:99px;margin-bottom:16px;font-size:13px}
     .alert.ok{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok)}
     .alert.error{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
 
@@ -457,9 +457,9 @@
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(val || 0);
     }
 
-    // Charger les produits dans les selects
+    // Charger les produits dans les selects (filtrés par compte_id)
     async function loadProductSelects() {
-      const { data } = await db.from('produits').select('id, nom, prix');
+      const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
       if (data) {
         const options = data.map(p => `<option value="${p.id}" data-prix="${p.prix}">${p.nom}</option>`).join('');
         document.getElementById('cmd-produit').innerHTML = options;
@@ -486,14 +486,14 @@
       if (recDate) recDate.value = today;
     })();
 
-    // Charger les clients/fournisseurs dans les selects
+    // Charger les clients/fournisseurs dans les selects (filtrés par compte_id)
     async function loadClientsSelects() {
-      const { data } = await db.from('clients').select('id, nom');
+      const { data } = await db.from('clients').select('id, nom').eq('compte_id', currentUserId);
       if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
     }
 
     async function loadFournisseursSelects() {
-      const { data } = await db.from('fournisseurs').select('id, nom');
+      const { data } = await db.from('fournisseurs').select('id, nom').eq('compte_id', currentUserId);
       if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
     }
 
@@ -598,9 +598,12 @@
       loadBilans();
     });
 
-    // Load functions
+    // Load functions (filtrées par compte_id)
     async function loadProducts() {
-      const { data, error } = await db.from('produits').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('produits')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
       if (error) { console.error('Erreur chargement produits:', error); }
       if (!data) return;
@@ -670,14 +673,20 @@
     }
 
     async function loadClients() {
-      const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('clients')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .order('created_at', { ascending: false });
       if (error) console.error('Erreur chargement clients:', error);
       if (!data) return;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
     }
 
     async function loadCommandes() {
-      const { data, error } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).order('date_commande', { ascending: false });
+      const { data, error } = await db.from('commandes_clients')
+        .select(`*, client:clients(nom), produit:produits(nom)`)
+        .eq('compte_id', currentUserId)
+        .order('date_commande', { ascending: false });
       if (error) console.error('Erreur chargement commandes:', error);
       if (!data) return;
       commandesCache = data;
@@ -686,27 +695,37 @@
         if (c.statut === 'livree') badge = `<span class="badge badge-ok">Livrée</span>`;
         else if (c.statut === 'partiellement_livree') badge = `<span class="badge badge-warn">Partielle</span>`;
         else badge = `<span class="badge">En attente</span>`;
-        return `<tr><td>${c.client.nom}</td><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button> <button class="btn btn-small" onclick="printFactureCommande('${c.id}')">Facture</button></td></tr>`;
+        return `<tr><td>${c.client ? c.client.nom : '-'}</td><td>${c.produit ? c.produit.nom : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button> <button class="btn btn-small" onclick="printFactureCommande('${c.id}')">Facture</button></td></tr>`;
       }).join('');
     }
 
     async function loadFournisseurs() {
-      const { data, error } = await db.from('fournisseurs').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('fournisseurs')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .order('created_at', { ascending: false });
       if (error) console.error('Erreur chargement fournisseurs:', error);
       if (!data) return;
       document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
-      const { data, error } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).order('date_reception', { ascending: false });
+      const { data, error } = await db.from('receptions_fournisseurs')
+        .select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`)
+        .eq('compte_id', currentUserId)
+        .order('date_reception', { ascending: false });
       if (error) console.error('Erreur chargement réceptions:', error);
       if (!data) return;
       receptionsCache = data;
-      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur.nom}</td><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td><td><button class="btn btn-small" onclick="printFactureReception('${r.id}')">Facture</button></td></tr>`).join('');
+      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur ? r.fournisseur.nom : '-'}</td><td>${r.produit ? r.produit.nom : '-'}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td><td><button class="btn btn-small" onclick="printFactureReception('${r.id}')">Facture</button></td></tr>`).join('');
     }
 
     async function loadMouvements() {
-      const { data, error } = await db.from('mouvements_comptables').select('*').order('date_mouvement', { ascending: false }).limit(50);
+      const { data, error } = await db.from('mouvements_comptables')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .order('date_mouvement', { ascending: false })
+        .limit(50);
       if (error) console.error('Erreur chargement mouvements:', error);
       if (!data) return;
       document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
@@ -714,10 +733,19 @@
 
     async function loadBilans() {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: bilan, error: errBilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).single();
-      const { data: bilanAnn, error: errAnn } = await db.from('bilan_annuel').select('*').single();
-      if (errBilan) console.warn('Bilan du jour non trouvé (normal si aucune vente/achat aujourd\'hui):', errBilan.message);
-      if (errAnn) console.warn('Bilan annuel non trouvé (normal si aucune donnée cette année):', errAnn.message);
+      const { data: bilan, error: errBilan } = await db.from('bilans_journaliers')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .eq('date_bilan', today)
+        .maybeSingle();
+      
+      const { data: bilanAnn, error: errAnn } = await db.from('bilan_annuel')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .maybeSingle();
+
+      if (errBilan) console.warn('Bilan du jour non trouvé:', errBilan.message);
+      if (errAnn) console.warn('Bilan annuel non trouvé:', errAnn.message);
 
       if (bilan) {
         document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
@@ -735,9 +763,7 @@
       }
     }
 
-    // Vérifie si l'utilisateur connecté a un abonnement actif et non expiré.
-    // Nécessite une table Supabase "abonnements" avec les colonnes :
-    //   user_id (text, = Clerk user id), statut (text: 'actif'/'inactif'), date_expiration (date)
+    // Vérifie si l'utilisateur connecté a un abonnement actif
     async function verifierAbonnement(userId) {
       const { data, error } = await db
         .from('abonnements')
@@ -747,7 +773,7 @@
 
       if (error) {
         console.error('Erreur vérification abonnement:', error);
-        return false; // par sécurité, on bloque l'accès en cas d'erreur
+        return false;
       }
       if (!data) return false;
 
@@ -774,17 +800,23 @@
     async function loadDashboard() {
       const today = new Date().toISOString().slice(0, 10);
 
-      // Cartes du jour (réutilise le bilan journalier déjà calculé)
-      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('date_bilan', today).maybeSingle();
+      // Cartes du jour
+      const { data: bilan } = await db.from('bilans_journaliers')
+        .select('*')
+        .eq('compte_id', currentUserId)
+        .eq('date_bilan', today)
+        .maybeSingle();
+      
       document.getElementById('dash-ventes').textContent = formatCurrency(bilan?.total_ventes || 0);
       document.getElementById('dash-achats').textContent = formatCurrency(bilan?.total_achats || 0);
       document.getElementById('dash-profit').textContent = formatCurrency(bilan?.profit_net || 0);
 
-      // Vue d'ensemble : ventes vs achats sur les 7 derniers jours
+      // Vue d'ensemble : 7 derniers jours
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       const { data: bilans7j } = await db.from('bilans_journaliers')
         .select('date_bilan, total_ventes, total_achats')
+        .eq('compte_id', currentUserId)
         .gte('date_bilan', sevenDaysAgo.toISOString().slice(0, 10))
         .order('date_bilan', { ascending: true });
 
@@ -821,9 +853,10 @@
         }
       });
 
-      // Répartition des ventes : top 5 produits par chiffre d'affaires (commandes)
+      // Répartition des ventes
       const { data: commandes } = await db.from('commandes_clients')
-        .select('quantite_commandee, prix_unitaire, produit:produits(nom)');
+        .select('quantite_commandee, prix_unitaire, produit:produits(nom)')
+        .eq('compte_id', currentUserId);
 
       const parProduit = {};
       (commandes || []).forEach(c => {
@@ -851,7 +884,7 @@
     }
 
     async function updateCommande(id, statut) {
-      await db.from('commandes_clients').update({ statut }).eq('id', id);
+      await db.from('commandes_clients').update({ statut }).eq('id', id).eq('compte_id', currentUserId);
       loadCommandes();
       loadBilans();
     }
@@ -868,17 +901,17 @@
       document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
       currentUserId = window.Clerk.user.id;
 
-      // DIAGNOSTIC : affiche le contenu du token Clerk pour vérifier qu'il est bien reconnu par Supabase
+      // DIAGNOSTIC
       try {
         const debugToken = await window.Clerk.session.getToken({ template: 'E', skipCache: true });
         if (debugToken) {
           const payload = JSON.parse(atob(debugToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-          console.log('🔑 Token Clerk décodé (vérifier "role" et "aud") :', payload);
+          console.log('🔑 Token Clerk décodé :', payload);
         } else {
-          console.warn('⚠️ Aucun token Clerk obtenu (getToken a renvoyé null/undefined)');
+          console.warn('⚠️ Aucun token Clerk obtenu');
         }
       } catch (e) {
-        console.error('❌ Erreur en récupérant/décodant le token Clerk :', e);
+        console.error('❌ Erreur token Clerk :', e);
       }
 
       db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -891,7 +924,7 @@
       const abonneActif = await verifierAbonnement(window.Clerk.user.id);
       if (!abonneActif) {
         afficherPaywall();
-        return; // on n'accède à aucune donnée tant que l'abonnement n'est pas actif
+        return;
       }
       afficherApp();
 
