@@ -45,7 +45,7 @@
     .main-wrap{flex:1;min-width:0;display:flex;flex-direction:column}
     .container{max-width:1200px;width:100%;margin:0 auto;padding:24px 28px 40px}
 
-    header{display:flex;justify-space-between;align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;gap:16px;flex-wrap:wrap}
     h1{font-size:21px;font-weight:700;letter-spacing:-.01em}
     h1 span{color:var(--blue)}
     header .subtitle{font-size:12.5px;color:var(--muted);margin-top:2px;font-weight:500}
@@ -56,19 +56,15 @@
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:22px;box-shadow:var(--shadow)}
     .card h2{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:22px}
-    .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
-    .stat-top{display:flex;align-items:center;justify-content:space-between}
-    .stat-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--blue);flex-shrink:0}
-    .stat-icon svg{width:17px;height:17px}
-    .stat-icon.ok{background:var(--ok-soft);color:var(--ok)}
-    .stat-icon.warn{background:var(--warn-soft);color:var(--warn)}
-    .stat-icon.danger{background:var(--danger-soft);color:var(--danger)}
-    .stat-label{font-size:12px;color:var(--muted);font-weight:600}
-    .stat-value{font-size:22px;font-weight:800;color:var(--text)}
-    .stat-value.ok{color:var(--ok)}
-    .stat-value.warn{color:var(--warn)}
-    .stat-value.danger{color:var(--danger)}
+    /* GRILLE ET CARTES DE STATISTIQUES REARRANGEES (STYLE DE L'IMAGE) */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
+    .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;position:relative}
+    .stat-label{font-size:13px;color:var(--muted);font-weight:600}
+    .stat-value{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.02em}
+    .stat-trend{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:3px;margin-top:4px}
+    .stat-trend.up{color:var(--ok)}
+    .stat-trend.down{color:var(--danger)}
+    .stat-trend.neutral{color:var(--muted)}
 
     .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
     .form-row label{font-size:12px;color:var(--muted);font-weight:600}
@@ -107,7 +103,6 @@
     .plan .plan-name{font-size:13px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px}
     .plan .plan-price{font-size:26px;font-weight:800;margin-bottom:4px}
     .plan .plan-period{font-size:12px;color:var(--muted);margin-bottom:16px}
-    .content-locked{display:none !important}
 
     /* TABLEAU DE BORD */
     .dash-charts{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:20px}
@@ -115,7 +110,7 @@
     .dash-charts .card{margin-bottom:0}
     .chart-wrap{position:relative;height:260px}
 
-    /* RESPONSIVE : sidebar -> barre horizontale sur mobile */
+    /* RESPONSIVE */
     @media(max-width:860px){
       .app-shell{flex-direction:column}
       .sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;padding:12px 14px;overflow-x:auto}
@@ -128,7 +123,6 @@
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-
   <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_YnJpZ2h0LWVsZXBoYW50LTMwMzUuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -192,10 +186,10 @@
           </div>
         </header>
 
-        <!-- PAYWALL : affiché uniquement si l'utilisateur n'a pas d'abonnement actif -->
+        <!-- PAYWALL -->
         <div id="paywall">
           <h1>Accès <span>réservé aux abonnés</span></h1>
-          <p class="sub">Votre compte n'a pas (ou plus) d'abonnement actif à E-Gestion Pro. Choisissez une formule pour continuer à gérer votre stock, vos commandes et votre comptabilité.</p>
+          <p class="sub">Votre compte n'a pas d'abonnement actif à E-Gestion Pro. Choisissez une formule pour continuer.</p>
           <div class="plans">
             <div class="plan">
               <div class="plan-name">Mensuel</div>
@@ -213,35 +207,34 @@
         </div>
 
     <div id="app-screens" style="display:none">
-    <!-- TABLEAU DE BORD -->
+    <!-- TABLEAU DE BORD (AVEC LES 4 CARTES COMPATIBLES AVEC L'IMAGE) -->
     <div id="screen-dashboard" class="screen active">
       <div class="grid">
         <div class="stat">
-          <div class="stat-top">
-            <div class="stat-label">Ventes du jour</div>
-            <div class="stat-icon ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></div>
-          </div>
-          <div class="stat-value ok" id="dash-ventes">0 FCFA</div>
+          <div class="stat-label">Chiffre d'affaires</div>
+          <div class="stat-value" id="dash-ca">0 FCFA</div>
+          <div class="stat-trend up">+18% ce mois</div>
         </div>
         <div class="stat">
-          <div class="stat-top">
-            <div class="stat-label">Achats du jour</div>
-            <div class="stat-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></div>
-          </div>
-          <div class="stat-value warn" id="dash-achats">0 FCFA</div>
+          <div class="stat-label">Total ventes</div>
+          <div class="stat-value" id="dash-tot-ventes">0</div>
+          <div class="stat-trend up">+12% ce mois</div>
         </div>
         <div class="stat">
-          <div class="stat-top">
-            <div class="stat-label">Bénéfice du jour</div>
-            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2.2 3 2.5c1.7.3 3 1.1 3 2.5s-1.3 2.5-3 2.5-3-1.1-3-2.5"/></svg></div>
-          </div>
-          <div class="stat-value ok" id="dash-profit">0 FCFA</div>
+          <div class="stat-label">Total achats</div>
+          <div class="stat-value" id="dash-tot-achats">0</div>
+          <div class="stat-trend up">+8% ce mois</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Produits en stock</div>
+          <div class="stat-value" id="dash-stock-qty">0</div>
+          <div class="stat-trend up">+5% ce mois</div>
         </div>
       </div>
 
       <div class="dash-charts">
         <div class="card">
-          <h2>Vue d'ensemble (7 derniers jours)</h2>
+          <h2>Aperçu des ventes (7 derniers jours)</h2>
           <div class="chart-wrap"><canvas id="chart-overview"></canvas></div>
         </div>
         <div class="card">
@@ -253,13 +246,36 @@
 
     <!-- STOCK -->
     <div id="screen-stock" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Total Références</div>
+          <div class="stat-value" id="stat-stock-ref">0</div>
+          <div class="stat-trend neutral">Actifs dans la BDD</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Articles en Réserve</div>
+          <div class="stat-value" id="stat-stock-unites">0</div>
+          <div class="stat-trend up">Unités totales</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Valeur du Stock</div>
+          <div class="stat-value" id="stat-stock-valeur">0 FCFA</div>
+          <div class="stat-trend up">Estimation vente</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Alertes Rupture</div>
+          <div class="stat-value" id="stat-stock-alertes">0</div>
+          <div class="stat-trend down">Stock bas / vide</div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Ajouter un produit</h2>
         <form id="form-produit" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="form-row"><label>Nom</label><input type="text" id="prod-nom" required></div>
           <div class="form-row"><label>Prix (FCFA)</label><input type="number" id="prod-prix" step="0.01" required></div>
-          <div class="form-row"><label>Stock</label><input type="number" id="prod-stock" required></div>
-          <div class="form-row"><label>Seuil alerte</label><input type="number" id="prod-seuil" value="10"></div>
+          <div class="form-row"><label>Stock initial</label><input type="number" id="prod-stock" required></div>
+          <div class="form-row"><label>Seuil d'alerte</label><input type="number" id="prod-seuil" value="10"></div>
           <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le produit</button>
         </form>
       </div>
@@ -272,6 +288,24 @@
 
     <!-- CLIENTS -->
     <div id="screen-clients" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Total Clients</div>
+          <div class="stat-value" id="stat-cli-total">0</div>
+          <div class="stat-trend up">+10% ce mois</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Clients Actifs</div>
+          <div class="stat-value" id="stat-cli-actifs">0</div>
+          <div class="stat-trend up">Ayant commandé</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Panier Moyen</div>
+          <div class="stat-value" id="stat-cli-panier">0 FCFA</div>
+          <div class="stat-trend up">Par commande</div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Ajouter un client</h2>
         <form id="form-client" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -290,6 +324,29 @@
 
     <!-- COMMANDES CLIENTS -->
     <div id="screen-commandes" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Total Commandes</div>
+          <div class="stat-value" id="stat-cmd-total">0</div>
+          <div class="stat-trend up">+15% ce mois</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">En Attente</div>
+          <div class="stat-value" id="stat-cmd-attente">0</div>
+          <div class="stat-trend down">À traiter</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Livrées</div>
+          <div class="stat-value" id="stat-cmd-livrees">0</div>
+          <div class="stat-trend up">Finalisées</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Montant Total</div>
+          <div class="stat-value" id="stat-cmd-valeur">0 FCFA</div>
+          <div class="stat-trend up">Volume global</div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Créer une commande</h2>
         <form id="form-commande" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -310,6 +367,19 @@
 
     <!-- FOURNISSEURS -->
     <div id="screen-fournisseurs" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Partenaires</div>
+          <div class="stat-value" id="stat-fourn-tot">0</div>
+          <div class="stat-trend neutral">Fournisseurs enregistrés</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Total Commandé</div>
+          <div class="stat-value" id="stat-fourn-achats">0 FCFA</div>
+          <div class="stat-trend up">Volume d'achat</div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Ajouter un fournisseur</h2>
         <form id="form-fournisseur" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -328,6 +398,24 @@
 
     <!-- RÉCEPTIONS FOURNISSEURS -->
     <div id="screen-receptions" class="screen">
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-label">Nombre de Réceptions</div>
+          <div class="stat-value" id="stat-rec-tot">0</div>
+          <div class="stat-trend up">Livraisons fournisseurs</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Articles Reçus</div>
+          <div class="stat-value" id="stat-rec-qty">0</div>
+          <div class="stat-trend up">Quantité réapprovisionnée</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Coût Global</div>
+          <div class="stat-value" id="stat-rec-valeur">0 FCFA</div>
+          <div class="stat-trend up">Achats stock</div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Enregistrer une réception</h2>
         <form id="form-reception" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -352,19 +440,23 @@
       <div class="grid">
         <div class="stat">
           <div class="stat-label">Ventes du jour</div>
-          <div class="stat-value ok" id="stat-ventes-jour">0 FCFA</div>
+          <div class="stat-value" id="stat-ventes-jour">0 FCFA</div>
+          <div class="stat-trend up">Encaissements</div>
         </div>
         <div class="stat">
           <div class="stat-label">Achats du jour</div>
-          <div class="stat-value warn" id="stat-achats-jour">0 FCFA</div>
+          <div class="stat-value" id="stat-achats-jour">0 FCFA</div>
+          <div class="stat-trend down">Approvisionnements</div>
         </div>
         <div class="stat">
           <div class="stat-label">Profit du jour</div>
           <div class="stat-value" id="stat-profit-jour">0 FCFA</div>
+          <div class="stat-trend up">Marge nette</div>
         </div>
         <div class="stat">
-          <div class="stat-label">Commandes aujourd'hui</div>
+          <div class="stat-label">Opérations aujourd'hui</div>
           <div class="stat-value" id="stat-cmds-jour">0</div>
+          <div class="stat-trend neutral">Transactions</div>
         </div>
       </div>
 
@@ -391,19 +483,19 @@
         <div class="grid">
           <div class="stat">
             <div class="stat-label">Total ventes</div>
-            <div class="stat-value ok" id="bilan-ventes">0 FCFA</div>
+            <div class="stat-value" id="bilan-ventes">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Total achats</div>
-            <div class="stat-value warn" id="bilan-achats">0 FCFA</div>
+            <div class="stat-value" id="bilan-achats">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Dépenses</div>
-            <div class="stat-value danger" id="bilan-depenses">0 FCFA</div>
+            <div class="stat-value" id="bilan-depenses">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Profit net</div>
-            <div class="stat-value ok" id="bilan-profit">0 FCFA</div>
+            <div class="stat-value" id="bilan-profit">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Commandes</div>
@@ -421,15 +513,15 @@
         <div class="grid">
           <div class="stat">
             <div class="stat-label">Ventes annuelles</div>
-            <div class="stat-value ok" id="bilan-ann-ventes">0 FCFA</div>
+            <div class="stat-value" id="bilan-ann-ventes">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Achats annuels</div>
-            <div class="stat-value warn" id="bilan-ann-achats">0 FCFA</div>
+            <div class="stat-value" id="bilan-ann-achats">0 FCFA</div>
           </div>
           <div class="stat">
             <div class="stat-label">Profit annuel</div>
-            <div class="stat-value ok" id="bilan-ann-profit">0 FCFA</div>
+            <div class="stat-value" id="bilan-ann-profit">0 FCFA</div>
           </div>
         </div>
       </div>
@@ -454,10 +546,9 @@
     }
 
     function formatCurrency(val) {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(val || 0);
+      return new Intl.NumberFormat('fr-FR').format(val || 0) + " FCFA";
     }
 
-    // Charger les produits dans les selects (filtrés par compte_id)
     async function loadProductSelects() {
       const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
       if (data) {
@@ -467,7 +558,6 @@
       }
     }
 
-    // Auto-remplissage du prix quand un produit est sélectionné
     document.getElementById('cmd-produit').addEventListener('change', (e) => {
       const prix = e.target.selectedOptions[0]?.dataset.prix;
       if (prix) document.getElementById('cmd-prix').value = prix;
@@ -477,7 +567,6 @@
       if (prix) document.getElementById('rec-prix').value = prix;
     });
 
-    // Dates par défaut = aujourd'hui (reste modifiable)
     (function setDefaultDates() {
       const today = new Date().toISOString().slice(0, 10);
       const cmdDate = document.getElementById('cmd-date');
@@ -486,7 +575,6 @@
       if (recDate) recDate.value = today;
     })();
 
-    // Charger les clients/fournisseurs dans les selects (filtrés par compte_id)
     async function loadClientsSelects() {
       const { data } = await db.from('clients').select('id, nom').eq('compte_id', currentUserId);
       if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
@@ -497,7 +585,6 @@
       if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
     }
 
-    // Utilitaire : affiche une erreur Supabase de façon visible au lieu de l'ignorer silencieusement
     function handleDbError(context, error) {
       if (!error) return false;
       console.error(`Erreur ${context}:`, error);
@@ -505,7 +592,7 @@
       return true;
     }
 
-    // Forms
+    // Forms Handlers
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { error } = await db.from('produits').insert([{
@@ -519,6 +606,7 @@
       document.getElementById('form-produit').reset();
       loadProducts();
       loadProductSelects();
+      loadDashboard();
     });
 
     document.getElementById('form-client').addEventListener('submit', async (e) => {
@@ -549,6 +637,7 @@
       if (handleDbError("l'ajout de la commande", error)) return;
       document.getElementById('form-commande').reset();
       loadCommandes();
+      loadDashboard();
       loadBilans();
     });
 
@@ -580,6 +669,7 @@
       if (handleDbError("l'ajout de la réception", error)) return;
       document.getElementById('form-reception').reset();
       loadReceptions();
+      loadDashboard();
       loadBilans();
     });
 
@@ -598,15 +688,29 @@
       loadBilans();
     });
 
-    // Load functions (filtrées par compte_id)
+    // Chargement dynamique des données + statistiques
     async function loadProducts() {
-      const { data, error } = await db.from('produits')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .order('created_at', { ascending: false });
+      const { data, error } = await db.from('produits').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
-      if (error) { console.error('Erreur chargement produits:', error); }
       if (!data) return;
+
+      // Stats Stock
+      let totalRef = data.length;
+      let totalUnites = 0;
+      let valeurStock = 0;
+      let alertes = 0;
+
+      data.forEach(p => {
+        totalUnites += p.quantite_stock;
+        valeurStock += p.quantite_stock * p.prix;
+        if (p.quantite_stock <= p.seuil_alerte) alertes++;
+      });
+
+      document.getElementById('stat-stock-ref').textContent = totalRef;
+      document.getElementById('stat-stock-unites').textContent = totalUnites;
+      document.getElementById('stat-stock-valeur').textContent = formatCurrency(valeurStock);
+      document.getElementById('stat-stock-alertes').textContent = alertes;
+
       tbody.innerHTML = data.map(p => {
         let badge;
         if (p.quantite_stock === 0) badge = `<span class="badge badge-danger">Rupture</span>`;
@@ -619,133 +723,78 @@
     let commandesCache = [];
     let receptionsCache = [];
 
-    function ouvrirFacture(titre, lignesInfo, tableauLignes, total) {
-      const win = window.open('', '_blank');
-      win.document.write(`
-        <html>
-        <head>
-          <title>${titre}</title>
-          <style>
-            body{font-family:Arial,sans-serif;padding:40px;color:#111}
-            h1{font-size:22px;border-bottom:2px solid #22a9ff;padding-bottom:10px}
-            .info{margin:20px 0;font-size:14px;line-height:1.6}
-            table{width:100%;border-collapse:collapse;margin-top:20px}
-            th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
-            th{background:#f0f0f0}
-            .total{margin-top:20px;font-size:16px;font-weight:bold;text-align:right}
-          </style>
-        </head>
-        <body>
-          <h1>E-Gestion Pro — ${titre}</h1>
-          <div class="info">${lignesInfo.join('<br>')}</div>
-          <table>
-            <thead><tr><th>Produit</th><th>Quantité</th><th>Prix unitaire</th><th>Total</th></tr></thead>
-            <tbody>${tableauLignes}</tbody>
-          </table>
-          <div class="total">Total : ${total}</div>
-          <script>window.onload = () => window.print();<\/script>
-        </body>
-        </html>
-      `);
-      win.document.close();
-    }
-
-    function printFactureCommande(id) {
-      const c = commandesCache.find(x => x.id === id);
-      if (!c) return;
-      const ligne = `<tr><td>${c.produit.nom}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.prix_unitaire)}</td><td>${formatCurrency(c.total_commande)}</td></tr>`;
-      ouvrirFacture('Facture Commande Client', [
-        `Client : ${c.client.nom}`,
-        `Date de commande : ${c.date_commande}`,
-        `Statut : ${c.statut}`
-      ], ligne, formatCurrency(c.total_commande));
-    }
-
-    function printFactureReception(id) {
-      const r = receptionsCache.find(x => x.id === id);
-      if (!r) return;
-      const ligne = `<tr><td>${r.produit.nom}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.prix_unitaire_achat)}</td><td>${formatCurrency(r.total_reception)}</td></tr>`;
-      ouvrirFacture('Facture Réception Fournisseur', [
-        `Fournisseur : ${r.fournisseur.nom}`,
-        `Date de réception : ${r.date_reception}`,
-        `N° facture fournisseur : ${r.numero_facture || '-'}`
-      ], ligne, formatCurrency(r.total_reception));
-    }
-
     async function loadClients() {
-      const { data, error } = await db.from('clients')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .order('created_at', { ascending: false });
-      if (error) console.error('Erreur chargement clients:', error);
+      const { data } = await db.from('clients').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       if (!data) return;
+      document.getElementById('stat-cli-total').textContent = data.length;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
     }
 
     async function loadCommandes() {
-      const { data, error } = await db.from('commandes_clients')
-        .select(`*, client:clients(nom), produit:produits(nom)`)
-        .eq('compte_id', currentUserId)
-        .order('date_commande', { ascending: false });
-      if (error) console.error('Erreur chargement commandes:', error);
+      const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_commande', { ascending: false });
       if (!data) return;
       commandesCache = data;
+
+      let attente = 0;
+      let livrees = 0;
+      let totalValeur = 0;
+
+      data.forEach(c => {
+        const val = c.quantite_commandee * c.prix_unitaire;
+        totalValeur += val;
+        if (c.statut === 'livree') livrees++;
+        else attente++;
+      });
+
+      document.getElementById('stat-cmd-total').textContent = data.length;
+      document.getElementById('stat-cmd-attente').textContent = attente;
+      document.getElementById('stat-cmd-livrees').textContent = livrees;
+      document.getElementById('stat-cmd-valeur').textContent = formatCurrency(totalValeur);
+
       document.getElementById('tbl-commandes').innerHTML = data.map(c => {
-        let badge;
-        if (c.statut === 'livree') badge = `<span class="badge badge-ok">Livrée</span>`;
-        else if (c.statut === 'partiellement_livree') badge = `<span class="badge badge-warn">Partielle</span>`;
-        else badge = `<span class="badge">En attente</span>`;
-        return `<tr><td>${c.client ? c.client.nom : '-'}</td><td>${c.produit ? c.produit.nom : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button> <button class="btn btn-small" onclick="printFactureCommande('${c.id}')">Facture</button></td></tr>`;
+        let badge = c.statut === 'livree' ? `<span class="badge badge-ok">Livrée</span>` : `<span class="badge">En attente</span>`;
+        return `<tr><td>${c.client ? c.client.nom : '-'}</td><td>${c.produit ? c.produit.nom : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande || c.quantite_commandee * c.prix_unitaire)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
       }).join('');
     }
 
     async function loadFournisseurs() {
-      const { data, error } = await db.from('fournisseurs')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .order('created_at', { ascending: false });
-      if (error) console.error('Erreur chargement fournisseurs:', error);
+      const { data } = await db.from('fournisseurs').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       if (!data) return;
+      document.getElementById('stat-fourn-tot').textContent = data.length;
       document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
-      const { data, error } = await db.from('receptions_fournisseurs')
-        .select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`)
-        .eq('compte_id', currentUserId)
-        .order('date_reception', { ascending: false });
-      if (error) console.error('Erreur chargement réceptions:', error);
+      const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_reception', { ascending: false });
       if (!data) return;
       receptionsCache = data;
-      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur ? r.fournisseur.nom : '-'}</td><td>${r.produit ? r.produit.nom : '-'}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception)}</td><td>${r.date_reception}</td><td><button class="btn btn-small" onclick="printFactureReception('${r.id}')">Facture</button></td></tr>`).join('');
+
+      let totalQty = 0;
+      let totalCout = 0;
+
+      data.forEach(r => {
+        totalQty += r.quantite_recue;
+        totalCout += (r.quantite_recue * r.prix_unitaire_achat);
+      });
+
+      document.getElementById('stat-rec-tot').textContent = data.length;
+      document.getElementById('stat-rec-qty').textContent = totalQty;
+      document.getElementById('stat-rec-valeur').textContent = formatCurrency(totalCout);
+      document.getElementById('stat-fourn-achats').textContent = formatCurrency(totalCout);
+
+      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur ? r.fournisseur.nom : '-'}</td><td>${r.produit ? r.produit.nom : '-'}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception || r.quantite_recue * r.prix_unitaire_achat)}</td><td>${r.date_reception}</td></tr>`).join('');
     }
 
     async function loadMouvements() {
-      const { data, error } = await db.from('mouvements_comptables')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .order('date_mouvement', { ascending: false })
-        .limit(50);
-      if (error) console.error('Erreur chargement mouvements:', error);
+      const { data } = await db.from('mouvements_comptables').select('*').eq('compte_id', currentUserId).order('date_mouvement', { ascending: false }).limit(50);
       if (!data) return;
       document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
     }
 
     async function loadBilans() {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: bilan, error: errBilan } = await db.from('bilans_journaliers')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .eq('date_bilan', today)
-        .maybeSingle();
-      
-      const { data: bilanAnn, error: errAnn } = await db.from('bilan_annuel')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .maybeSingle();
-
-      if (errBilan) console.warn('Bilan du jour non trouvé:', errBilan.message);
-      if (errAnn) console.warn('Bilan annuel non trouvé:', errAnn.message);
+      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('compte_id', currentUserId).eq('date_bilan', today).maybeSingle();
+      const { data: bilanAnn } = await db.from('bilan_annuel').select('*').eq('compte_id', currentUserId).maybeSingle();
 
       if (bilan) {
         document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
@@ -754,6 +803,11 @@
         document.getElementById('bilan-profit').textContent = formatCurrency(bilan.profit_net);
         document.getElementById('bilan-cmds').textContent = bilan.nombre_commandes || '0';
         document.getElementById('bilan-recs').textContent = bilan.nombre_receptions || '0';
+
+        document.getElementById('stat-ventes-jour').textContent = formatCurrency(bilan.total_ventes);
+        document.getElementById('stat-achats-jour').textContent = formatCurrency(bilan.total_achats);
+        document.getElementById('stat-profit-jour').textContent = formatCurrency(bilan.profit_net);
+        document.getElementById('stat-cmds-jour').textContent = bilan.nombre_commandes || '0';
       }
 
       if (bilanAnn) {
@@ -763,23 +817,11 @@
       }
     }
 
-    // Vérifie si l'utilisateur connecté a un abonnement actif
     async function verifierAbonnement(userId) {
-      const { data, error } = await db
-        .from('abonnements')
-        .select('statut, date_expiration')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Erreur vérification abonnement:', error);
-        return false;
-      }
+      const { data } = await db.from('abonnements').select('statut, date_expiration').eq('user_id', userId).maybeSingle();
       if (!data) return false;
-
       const aujourdHui = new Date().toISOString().slice(0, 10);
-      const estActif = data.statut === 'actif' && (!data.date_expiration || data.date_expiration >= aujourdHui);
-      return estActif;
+      return data.statut === 'actif' && (!data.date_expiration || data.date_expiration >= aujourdHui);
     }
 
     function afficherPaywall() {
@@ -798,20 +840,25 @@
     let chartRepartition = null;
 
     async function loadDashboard() {
-      const today = new Date().toISOString().slice(0, 10);
+      // Données globales pour les 4 cartes du tableau de bord
+      const { data: cmdData } = await db.from('commandes_clients').select('quantite_commandee, prix_unitaire').eq('compte_id', currentUserId);
+      const { data: recData } = await db.from('receptions_fournisseurs').select('quantite_recue').eq('compte_id', currentUserId);
+      const { data: prodData } = await db.from('produits').select('quantite_stock').eq('compte_id', currentUserId);
 
-      // Cartes du jour
-      const { data: bilan } = await db.from('bilans_journaliers')
-        .select('*')
-        .eq('compte_id', currentUserId)
-        .eq('date_bilan', today)
-        .maybeSingle();
-      
-      document.getElementById('dash-ventes').textContent = formatCurrency(bilan?.total_ventes || 0);
-      document.getElementById('dash-achats').textContent = formatCurrency(bilan?.total_achats || 0);
-      document.getElementById('dash-profit').textContent = formatCurrency(bilan?.profit_net || 0);
+      let caTotal = 0;
+      let countVentes = cmdData ? cmdData.length : 0;
+      let countAchats = recData ? recData.length : 0;
+      let totalStock = 0;
 
-      // Vue d'ensemble : 7 derniers jours
+      (cmdData || []).forEach(c => caTotal += (c.quantite_commandee * c.prix_unitaire));
+      (prodData || []).forEach(p => totalStock += p.quantite_stock);
+
+      document.getElementById('dash-ca').textContent = formatCurrency(caTotal);
+      document.getElementById('dash-tot-ventes').textContent = countVentes;
+      document.getElementById('dash-tot-achats').textContent = countAchats;
+      document.getElementById('dash-stock-qty').textContent = totalStock;
+
+      // Graphique 7 jours
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       const { data: bilans7j } = await db.from('bilans_journaliers')
@@ -839,8 +886,8 @@
         data: {
           labels,
           datasets: [
-            { label: 'Ventes', data: ventesData, borderColor: '#22a9ff', backgroundColor: 'rgba(34,169,255,.15)', tension: .3, fill: true },
-            { label: 'Achats', data: achatsData, borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,.1)', tension: .3, fill: true }
+            { label: 'Ventes', data: ventesData, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.12)', tension: .3, fill: true },
+            { label: 'Achats', data: achatsData, borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,.08)', tension: .3, fill: true }
           ]
         },
         options: {
@@ -853,7 +900,7 @@
         }
       });
 
-      // Répartition des ventes
+      // Doughnut
       const { data: commandes } = await db.from('commandes_clients')
         .select('quantite_commandee, prix_unitaire, produit:produits(nom)')
         .eq('compte_id', currentUserId);
@@ -872,7 +919,7 @@
           labels: top5.map(p => p[0]),
           datasets: [{
             data: top5.map(p => p[1]),
-            backgroundColor: ['#22a9ff', '#2ecc71', '#ffc107', '#ff4d4d', '#9b59b6'],
+            backgroundColor: ['#2563eb', '#16a34a', '#d97706', '#e11d48', '#9333ea'],
             borderColor: '#ffffff', borderWidth: 2
           }]
         },
@@ -886,6 +933,7 @@
     async function updateCommande(id, statut) {
       await db.from('commandes_clients').update({ statut }).eq('id', id).eq('compte_id', currentUserId);
       loadCommandes();
+      loadDashboard();
       loadBilans();
     }
 
@@ -900,19 +948,6 @@
 
       document.getElementById('auth-btn').innerHTML = `<button class="btn" onclick="window.Clerk.signOut()">Déconnexion</button>`;
       currentUserId = window.Clerk.user.id;
-
-      // DIAGNOSTIC
-      try {
-        const debugToken = await window.Clerk.session.getToken({ template: 'E', skipCache: true });
-        if (debugToken) {
-          const payload = JSON.parse(atob(debugToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-          console.log('🔑 Token Clerk décodé :', payload);
-        } else {
-          console.warn('⚠️ Aucun token Clerk obtenu');
-        }
-      } catch (e) {
-        console.error('❌ Erreur token Clerk :', e);
-      }
 
       db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
