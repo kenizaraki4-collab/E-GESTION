@@ -188,7 +188,7 @@
 
       db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
-          if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
+          if (window.Clerk.session) return await window.Clerk.session.getToken({ template: 'E', skipCache: true });
           return null;
         }
       });
