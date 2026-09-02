@@ -642,7 +642,7 @@
 
       // DIAGNOSTIC : affiche le contenu du token Clerk pour vérifier qu'il est bien reconnu par Supabase
       try {
-        const debugToken = await window.Clerk.session.getToken({ skipCache: true });
+        const debugToken = await window.Clerk.session.getToken({ template: 'E', skipCache: true });
         if (debugToken) {
           const payload = JSON.parse(atob(debugToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
           console.log('🔑 Token Clerk décodé (vérifier "role" et "aud") :', payload);
@@ -655,7 +655,7 @@
 
       db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         accessToken: async () => {
-          if (window.Clerk.session) return await window.Clerk.session.getToken({ skipCache: true });
+          if (window.Clerk.session) return await window.Clerk.session.getToken({ template: 'E', skipCache: true });
           return null;
         }
       });
