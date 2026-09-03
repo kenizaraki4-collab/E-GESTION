@@ -97,6 +97,12 @@
     .type-card{border:1.5px solid var(--line);border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:var(--text);background:#fbfcfe;transition:border-color .15s,background .15s}
     .type-card:hover{border-color:var(--blue)}
     .type-card.selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-dark)}
+
+    /* MODE ADMIN : sélecteur de compte + bandeau lecture seule */
+    #admin-switcher{display:none;align-items:center;gap:8px;margin-bottom:16px}
+    #admin-switcher select{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:13px;color:var(--text)}
+    #admin-readonly-banner{display:none;background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:18px}
+    body.mode-lecture-seule form button[type="submit"]{opacity:.4;pointer-events:none}
     .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:600px;width:100%;margin-bottom:24px}
     .plan{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
     .plan.highlight{border-color:var(--blue);border-width:2px}
@@ -186,6 +192,14 @@
             <div id="auth-btn"></div>
           </div>
         </header>
+
+        <div id="admin-switcher">
+          <label style="font-size:13px;color:var(--muted);font-weight:600">👁️ Mode admin — consulter le compte :</label>
+          <select id="admin-compte-select" onchange="changerCompteConsulte(this.value)">
+            <option value="">-- Mon propre compte --</option>
+          </select>
+        </div>
+        <div id="admin-readonly-banner">🔒 Mode consultation admin : lecture seule, aucune modification possible sur ce compte.</div>
 
         <!-- ONBOARDING : demandé une seule fois, avant le paywall -->
         <div id="onboarding">
@@ -573,6 +587,8 @@
     let db = null;
     let currentUserId = null;
     let currentCompte = null;
+    let soyAdmin = false;
+    let compteActif = null; // = currentUserId par défaut, ou le compte consulté si admin
 
     const LABELS = {
       supermarche: {
@@ -868,7 +884,7 @@
     }
 
     async function loadProductSelects() {
-      const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
+      const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', compteActif);
       if (data) {
         const options = data.map(p => `<option value="${escapeHtml(p.id)}" data-prix="${escapeHtml(p.prix)}">${escapeHtml(p.nom)}</option>`).join('');
         document.getElementById('cmd-produit').innerHTML = options;
@@ -894,12 +910,12 @@
     })();
 
     async function loadClientsSelects() {
-      const { data } = await db.from('clients').select('id, nom').eq('compte_id', currentUserId);
+      const { data } = await db.from('clients').select('id, nom').eq('compte_id', compteActif);
       if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.nom)}</option>`).join('');
     }
 
     async function loadFournisseursSelects() {
-      const { data } = await db.from('fournisseurs').select('id, nom').eq('compte_id', currentUserId);
+      const { data } = await db.from('fournisseurs').select('id, nom').eq('compte_id', compteActif);
       if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.nom)}</option>`).join('');
     }
 
@@ -1032,7 +1048,7 @@
 
     // Chargement dynamique des données
     async function loadProducts() {
-      const { data, error } = await db.from('produits').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
+      const { data, error } = await db.from('produits').select('*').eq('compte_id', compteActif).order('created_at', { ascending: false });
       const tbody = document.getElementById('tbl-stock');
       if (!data) return;
 
@@ -1074,7 +1090,7 @@
     }
 
     async function loadClients() {
-      const { data } = await db.from('clients').select('*, created_at').eq('compte_id', currentUserId).order('created_at', { ascending: false });
+      const { data } = await db.from('clients').select('*, created_at').eq('compte_id', compteActif).order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('stat-cli-total').textContent = data.length;
       document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${escapeHtml(c.nom)}</td><td>${escapeHtml(c.telephone) || '-'}</td><td>${escapeHtml(c.email) || '-'}</td></tr>`).join('');
@@ -1092,7 +1108,7 @@
     }
 
     async function loadCommandes() {
-      const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_commande', { ascending: false });
+      const { data } = await db.from('commandes_clients').select(`*, client:clients(nom), produit:produits(nom)`).eq('compte_id', compteActif).order('date_commande', { ascending: false });
       if (!data) return;
 
       let attente = 0;
@@ -1130,14 +1146,14 @@
     }
 
     async function loadFournisseurs() {
-      const { data } = await db.from('fournisseurs').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
+      const { data } = await db.from('fournisseurs').select('*').eq('compte_id', compteActif).order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('stat-fourn-tot').textContent = data.length;
       document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${escapeHtml(f.nom)}</td><td>${escapeHtml(f.telephone) || '-'}</td><td>${escapeHtml(f.email) || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
-      const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).eq('compte_id', currentUserId).order('date_reception', { ascending: false });
+      const { data } = await db.from('receptions_fournisseurs').select(`*, fournisseur:fournisseurs(nom), produit:produits(nom)`).eq('compte_id', compteActif).order('date_reception', { ascending: false });
       if (!data) return;
 
       let totalQty = 0;
@@ -1157,15 +1173,15 @@
     }
 
     async function loadMouvements() {
-      const { data } = await db.from('mouvements_comptables').select('*').eq('compte_id', currentUserId).order('date_mouvement', { ascending: false }).limit(50);
+      const { data } = await db.from('mouvements_comptables').select('*').eq('compte_id', compteActif).order('date_mouvement', { ascending: false }).limit(50);
       if (!data) return;
       document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${escapeHtml(m.date_mouvement)}</td><td>${escapeHtml(m.type)}</td><td>${escapeHtml(m.description)}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
     }
 
     async function loadBilans() {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('compte_id', currentUserId).eq('date_bilan', today).maybeSingle();
-      const { data: bilanAnn } = await db.from('bilan_annuel').select('*').eq('compte_id', currentUserId).maybeSingle();
+      const { data: bilan } = await db.from('bilans_journaliers').select('*').eq('compte_id', compteActif).eq('date_bilan', today).maybeSingle();
+      const { data: bilanAnn } = await db.from('bilan_annuel').select('*').eq('compte_id', compteActif).maybeSingle();
 
       if (bilan) {
         document.getElementById('bilan-ventes').textContent = formatCurrency(bilan.total_ventes);
@@ -1217,13 +1233,48 @@
         currentCompte ? `${currentCompte.nom_entreprise} · ${libelleTypeEntreprise(currentCompte)}` : '';
       appliquerAdaptationType(currentCompte);
 
-      const abonneActif = await verifierAbonnement(currentUserId);
-      if (!abonneActif) {
-        afficherPaywall();
-        return;
+      compteActif = currentUserId;
+
+      const { data: adminCheck } = await db.rpc('est_admin');
+      soyAdmin = !!adminCheck;
+
+      if (soyAdmin) {
+        document.getElementById('admin-switcher').style.display = 'flex';
+        await chargerListeComptesAdmin();
+      }
+
+      if (!soyAdmin) {
+        const abonneActif = await verifierAbonnement(currentUserId);
+        if (!abonneActif) {
+          afficherPaywall();
+          return;
+        }
       }
       afficherApp();
+      rechargerToutesLesDonnees();
+    }
 
+    // Remplit le sélecteur "Mode admin" avec tous les comptes existants
+    async function chargerListeComptesAdmin() {
+      const { data } = await db.from('comptes').select('*').order('nom_entreprise', { ascending: true });
+      const select = document.getElementById('admin-compte-select');
+      const optionsAutres = (data || [])
+        .filter(c => c.compte_id !== currentUserId)
+        .map(c => `<option value="${escapeHtml(c.compte_id)}">${escapeHtml(c.nom_entreprise)} · ${escapeHtml(libelleTypeEntreprise(c))}</option>`)
+        .join('');
+      select.innerHTML = `<option value="">-- Mon propre compte --</option>${optionsAutres}`;
+    }
+
+    // Appelée quand l'admin change de compte à consulter dans le sélecteur
+    async function changerCompteConsulte(compteId) {
+      compteActif = compteId || currentUserId;
+      const lectureSeule = compteActif !== currentUserId;
+      document.body.classList.toggle('mode-lecture-seule', lectureSeule);
+      document.getElementById('admin-readonly-banner').style.display = lectureSeule ? 'block' : 'none';
+      rechargerToutesLesDonnees();
+    }
+
+    function rechargerToutesLesDonnees() {
       loadDashboard();
       loadProducts();
       loadClients();
@@ -1256,9 +1307,9 @@
 
     async function loadDashboard() {
       // Données globales pour les 4 cartes du tableau de bord
-      const { data: cmdData } = await db.from('commandes_clients').select('quantite_commandee, prix_unitaire, date_commande').eq('compte_id', currentUserId);
-      const { data: recData } = await db.from('receptions_fournisseurs').select('quantite_recue, date_reception').eq('compte_id', currentUserId);
-      const { data: prodData } = await db.from('produits').select('quantite_stock').eq('compte_id', currentUserId);
+      const { data: cmdData } = await db.from('commandes_clients').select('quantite_commandee, prix_unitaire, date_commande').eq('compte_id', compteActif);
+      const { data: recData } = await db.from('receptions_fournisseurs').select('quantite_recue, date_reception').eq('compte_id', compteActif);
+      const { data: prodData } = await db.from('produits').select('quantite_stock').eq('compte_id', compteActif);
 
       let caTotal = 0;
       let countVentes = cmdData ? cmdData.length : 0;
@@ -1305,7 +1356,7 @@
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       const { data: bilans7j } = await db.from('bilans_journaliers')
         .select('date_bilan, total_ventes, total_achats')
-        .eq('compte_id', currentUserId)
+        .eq('compte_id', compteActif)
         .gte('date_bilan', sevenDaysAgo.toISOString().slice(0, 10))
         .order('date_bilan', { ascending: true });
 
@@ -1345,7 +1396,7 @@
       // Doughnut
       const { data: commandes } = await db.from('commandes_clients')
         .select('quantite_commandee, prix_unitaire, produit:produits(nom)')
-        .eq('compte_id', currentUserId);
+        .eq('compte_id', compteActif);
 
       const parProduit = {};
       (commandes || []).forEach(c => {
