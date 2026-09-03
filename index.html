@@ -86,12 +86,20 @@
     .badge-warn{background:var(--warn-soft);color:var(--warn)}
     .badge-danger{background:var(--danger-soft);color:var(--danger)}
 
-    /* PAYWALL */
-    #paywall{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px 20px;width:100%}
-    #paywall.active{display:flex}
-    #paywall h1{font-size:26px;margin-bottom:10px}
-    #paywall h1 span{color:var(--blue)}
-    #paywall p.sub{color:var(--muted);margin-bottom:30px;max-width:500px}
+    /* Colonne/champ "extra" spécifique au type d'entreprise (péremption, catégorie, qté min...) */
+    #screen-stock table.no-extra-col .extra-col{display:none}
+
+    /* PAYWALL / ONBOARDING */
+    #paywall, #onboarding{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px 20px;width:100%}
+    #paywall.active, #onboarding.active{display:flex}
+    #paywall h1, #onboarding h1{font-size:26px;margin-bottom:10px}
+    #paywall h1 span, #onboarding h1 span{color:var(--blue)}
+    #paywall p.sub, #onboarding p.sub{color:var(--muted);margin-bottom:30px;max-width:500px}
+    #onboarding form{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;text-align:left}
+    .type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+    .type-card{border:1.5px solid var(--line);border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:var(--text);background:#fbfcfe;transition:border-color .15s,background .15s}
+    .type-card:hover{border-color:var(--blue)}
+    .type-card.selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-dark)}
     .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:600px;width:100%;margin-bottom:24px}
     .plan{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
     .plan.highlight{border-color:var(--blue);border-width:2px}
@@ -135,13 +143,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
           Tableau de bord
         </button>
-        <button class="nav-btn" onclick="switchScreen('stock', this, 'Stock')">
+        <button class="nav-btn" onclick="switchScreen('stock', this, document.getElementById('nav-label-stock').textContent)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3.3 8.5l8.7 5 8.7-5"/><path d="M12 22V13"/></svg>
-          Stock
+          <span id="nav-label-stock">Stock</span>
         </button>
-        <button class="nav-btn" onclick="switchScreen('clients', this, 'Clients')">
+        <button class="nav-btn" onclick="switchScreen('clients', this, document.getElementById('nav-label-clients').textContent)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Clients
+          <span id="nav-label-clients">Clients</span>
         </button>
         <button class="nav-btn" onclick="switchScreen('commandes', this, 'Commandes')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
@@ -176,10 +184,39 @@
             <h1>E<span>-Gestion</span> Pro</h1>
             <div class="subtitle" id="page-subtitle">La gestion à portée de main.</div>
           </div>
-          <div style="display:flex;gap:10px;align-items:center">
+          <div style="display:flex;gap:14px;align-items:center">
+            <div id="entreprise-badge" style="font-size:12px;color:var(--muted);font-weight:600"></div>
             <div id="auth-btn"></div>
           </div>
         </header>
+
+        <!-- ONBOARDING : demandé une seule fois, avant le paywall -->
+        <div id="onboarding">
+          <h1>Bienvenue sur <span>E-Gestion Pro</span></h1>
+          <p class="sub">Avant de commencer, dis-nous quel type d'entreprise tu gères — on adapte l'application en fonction.</p>
+          <form id="form-onboarding" style="max-width:520px;width:100%">
+            <div class="form-row">
+              <label>Nom de l'entreprise</label>
+              <input type="text" id="onb-nom" required>
+            </div>
+            <div class="form-row">
+              <label>Type d'entreprise</label>
+              <div class="type-grid" id="onb-type-grid">
+                <div class="type-card" data-type="supermarche">🛒 Supermarché / Épicerie</div>
+                <div class="type-card" data-type="boutique">🏬 Boutique / Commerce général</div>
+                <div class="type-card" data-type="restaurant">🍽️ Restaurant / Bar</div>
+                <div class="type-card" data-type="pharmacie">💊 Pharmacie</div>
+                <div class="type-card" data-type="grossiste">📦 Grossiste / Distributeur</div>
+                <div class="type-card" data-type="autre">✏️ Autre</div>
+              </div>
+            </div>
+            <div class="form-row" id="onb-autre-row" style="display:none">
+              <label>Précise le type d'entreprise</label>
+              <input type="text" id="onb-type-autre">
+            </div>
+            <button type="submit" class="btn btn-full">Continuer</button>
+          </form>
+        </div>
 
         <!-- PAYWALL -->
         <div id="paywall">
@@ -221,7 +258,7 @@
           <div class="stat-trend" id="trend-achats">--</div>
         </div>
         <div class="stat">
-          <div class="stat-label">Produits en stock</div>
+          <div class="stat-label" id="dash-stock-qty-label">Produits en stock</div>
           <div class="stat-value" id="dash-stock-qty">0</div>
           <div class="stat-trend neutral" id="trend-stock">Articles disponibles</div>
         </div>
@@ -243,7 +280,7 @@
     <div id="screen-stock" class="screen">
       <div class="grid">
         <div class="stat">
-          <div class="stat-label">Total Références</div>
+          <div class="stat-label" id="stock-ref-label">Total Références</div>
           <div class="stat-value" id="stat-stock-ref">0</div>
           <div class="stat-trend neutral">Actifs dans la BDD</div>
         </div>
@@ -253,7 +290,7 @@
           <div class="stat-trend up">Unités totales</div>
         </div>
         <div class="stat">
-          <div class="stat-label">Valeur du Stock</div>
+          <div class="stat-label" id="stock-valeur-label">Valeur du Stock</div>
           <div class="stat-value" id="stat-stock-valeur">0 FCFA</div>
           <div class="stat-trend up">Estimation vente</div>
         </div>
@@ -265,19 +302,36 @@
       </div>
 
       <div class="card">
-        <h2>Ajouter un produit</h2>
+        <h2 id="stock-form-title">Ajouter un produit</h2>
         <form id="form-produit" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div class="form-row"><label>Nom</label><input type="text" id="prod-nom" required></div>
+          <div class="form-row"><label id="prod-nom-label">Nom</label><input type="text" id="prod-nom" required></div>
           <div class="form-row"><label>Prix (FCFA)</label><input type="number" id="prod-prix" step="0.01" required></div>
           <div class="form-row"><label>Stock initial</label><input type="number" id="prod-stock" required></div>
           <div class="form-row"><label>Seuil d'alerte</label><input type="number" id="prod-seuil" value="10"></div>
-          <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le produit</button>
+          <div class="form-row" id="prod-extra-pharmacie" style="display:none">
+            <label>Date de péremption</label>
+            <input type="date" id="prod-peremption">
+          </div>
+          <div class="form-row" id="prod-extra-restaurant" style="display:none">
+            <label>Catégorie</label>
+            <select id="prod-categorie">
+              <option value="entree">Entrée</option>
+              <option value="plat">Plat</option>
+              <option value="dessert">Dessert</option>
+              <option value="boisson">Boisson</option>
+            </select>
+          </div>
+          <div class="form-row" id="prod-extra-grossiste" style="display:none">
+            <label>Quantité minimum de commande</label>
+            <input type="number" id="prod-qte-min" value="1" min="1">
+          </div>
+          <button type="submit" class="btn" style="grid-column:1/-1" id="stock-form-submit">Ajouter le produit</button>
         </form>
       </div>
       
       <div class="card">
-        <h2>État du stock</h2>
-        <table><thead><tr><th>Produit</th><th>Prix</th><th>Stock</th><th>Statut</th></tr></thead><tbody id="tbl-stock"><tr><td colspan="4">Chargement...</td></tr></tbody></table>
+        <h2 id="stock-table-title">État du stock</h2>
+        <table id="stock-table"><thead><tr><th id="stock-th-produit">Produit</th><th>Prix</th><th>Stock</th><th class="extra-col" id="stock-th-extra">Extra</th><th>Statut</th></tr></thead><tbody id="tbl-stock"><tr><td colspan="5">Chargement...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -285,7 +339,7 @@
     <div id="screen-clients" class="screen">
       <div class="grid">
         <div class="stat">
-          <div class="stat-label">Total Clients</div>
+          <div class="stat-label" id="cli-total-label">Total Clients</div>
           <div class="stat-value" id="stat-cli-total">0</div>
           <div class="stat-trend" id="trend-clients">--</div>
         </div>
@@ -302,17 +356,17 @@
       </div>
 
       <div class="card">
-        <h2>Ajouter un client</h2>
+        <h2 id="clients-form-title">Ajouter un client</h2>
         <form id="form-client" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="form-row"><label>Nom</label><input type="text" id="cli-nom" required></div>
           <div class="form-row"><label>Téléphone</label><input type="tel" id="cli-tel"></div>
           <div class="form-row"><label>Email</label><input type="email" id="cli-email"></div>
-          <button type="submit" class="btn" style="grid-column:1/-1">Ajouter le client</button>
+          <button type="submit" class="btn" style="grid-column:1/-1" id="clients-form-submit">Ajouter le client</button>
         </form>
       </div>
       
       <div class="card">
-        <h2>Liste des clients</h2>
+        <h2 id="clients-table-title">Liste des clients</h2>
         <table><thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th></tr></thead><tbody id="tbl-clients"><tr><td colspan="3">Chargement...</td></tr></tbody></table>
       </div>
     </div>
@@ -321,7 +375,7 @@
     <div id="screen-commandes" class="screen">
       <div class="grid">
         <div class="stat">
-          <div class="stat-label">Total Commandes</div>
+          <div class="stat-label" id="cmd-total-label">Total Commandes</div>
           <div class="stat-value" id="stat-cmd-total">0</div>
           <div class="stat-trend" id="trend-cmd-total">--</div>
         </div>
@@ -343,20 +397,20 @@
       </div>
 
       <div class="card">
-        <h2>Créer une commande</h2>
+        <h2 id="cmd-form-title">Créer une commande</h2>
         <form id="form-commande" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="form-row"><label>Client</label><select id="cmd-client" required><option>Chargement...</option></select></div>
-          <div class="form-row"><label>Produit</label><select id="cmd-produit" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label id="cmd-produit-label">Produit</label><select id="cmd-produit" required><option>Chargement...</option></select></div>
           <div class="form-row"><label>Quantité</label><input type="number" id="cmd-quantite" required></div>
           <div class="form-row"><label>Prix unitaire</label><input type="number" id="cmd-prix" step="0.01" required></div>
           <div class="form-row"><label>Date prévue</label><input type="date" id="cmd-date"></div>
-          <button type="submit" class="btn" style="grid-column:1/-1">Créer la commande</button>
+          <button type="submit" class="btn" style="grid-column:1/-1" id="cmd-form-submit">Créer la commande</button>
         </form>
       </div>
       
       <div class="card">
-        <h2>Commandes en cours</h2>
-        <table><thead><tr><th>Client</th><th>Produit</th><th>Qty</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbl-commandes"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
+        <h2 id="cmd-table-title">Commandes en cours</h2>
+        <table><thead><tr><th>Client</th><th id="cmd-th-produit">Produit</th><th>Qty</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbl-commandes"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -415,7 +469,7 @@
         <h2>Enregistrer une réception</h2>
         <form id="form-reception" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div class="form-row"><label>Fournisseur</label><select id="rec-fournisseur" required><option>Chargement...</option></select></div>
-          <div class="form-row"><label>Produit</label><select id="rec-produit" required><option>Chargement...</option></select></div>
+          <div class="form-row"><label id="rec-produit-label">Produit</label><select id="rec-produit" required><option>Chargement...</option></select></div>
           <div class="form-row"><label>Quantité reçue</label><input type="number" id="rec-quantite" required></div>
           <div class="form-row"><label>Prix unitaire achat</label><input type="number" id="rec-prix" step="0.01" required></div>
           <div class="form-row"><label>Date réception</label><input type="date" id="rec-date" required></div>
@@ -426,7 +480,7 @@
       
       <div class="card">
         <h2>Historique des réceptions</h2>
-        <table><thead><tr><th>Fournisseur</th><th>Produit</th><th>Qty</th><th>Total achat</th><th>Date</th><th>Actions</th></tr></thead><tbody id="tbl-receptions"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
+        <table><thead><tr><th>Fournisseur</th><th id="rec-th-produit">Produit</th><th>Qty</th><th>Total achat</th><th>Date</th><th>Actions</th></tr></thead><tbody id="tbl-receptions"><tr><td colspan="6">Chargement...</td></tr></tbody></table>
       </div>
     </div>
 
@@ -531,6 +585,199 @@
     const SUPABASE_KEY = "sb_publishable__3zR170TFSBvLJTDlZ_UWQ_wtML7Sv3";
     let db = null;
     let currentUserId = null;
+    let currentCompte = null;
+
+    const TYPES_ENTREPRISE = {
+      supermarche: 'Supermarché / Épicerie',
+      boutique: 'Boutique / Commerce général',
+      restaurant: 'Restaurant / Bar',
+      pharmacie: 'Pharmacie',
+      grossiste: 'Grossiste / Distributeur'
+    };
+
+    // LIBELLÉS ADAPTÉS SELON LE TYPE D'ENTREPRISE CHOISI À L'ONBOARDING.
+    // Chaque type redéfinit le vocabulaire du module Stock / Produits / Clients / Commandes
+    // pour coller au métier de l'utilisateur, sans changer le schéma de données sous-jacent.
+    const LABELS_PAR_TYPE = {
+      supermarche: {
+        navStock: 'Stock', produitSing: 'Produit', produitPlur: 'Produits',
+        stockRefLabel: 'Total Références', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un produit', stockFormSubmit: 'Ajouter le produit',
+        stockTableTitle: 'État du stock', prodNomLabel: 'Nom',
+        dashStockLabel: 'Produits en stock',
+        cliTotalLabel: 'Total Clients', clientsFormTitle: 'Ajouter un client',
+        clientsFormSubmit: 'Ajouter le client', clientsTableTitle: 'Liste des clients',
+        cmdTotalLabel: 'Total Commandes', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      },
+      boutique: {
+        navStock: 'Stock', produitSing: 'Article', produitPlur: 'Articles',
+        stockRefLabel: 'Total Références', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un article', stockFormSubmit: 'Ajouter l\'article',
+        stockTableTitle: 'État du stock', prodNomLabel: 'Nom',
+        dashStockLabel: 'Articles en stock',
+        cliTotalLabel: 'Total Clients', clientsFormTitle: 'Ajouter un client',
+        clientsFormSubmit: 'Ajouter le client', clientsTableTitle: 'Liste des clients',
+        cmdTotalLabel: 'Total Commandes', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      },
+      restaurant: {
+        navStock: 'Menu', produitSing: 'Plat / Boisson', produitPlur: 'Plats & Boissons',
+        stockRefLabel: 'Total Références Menu', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un plat ou une boisson', stockFormSubmit: 'Ajouter au menu',
+        stockTableTitle: 'État du menu', prodNomLabel: 'Nom du plat / de la boisson',
+        dashStockLabel: 'Plats & boissons au menu',
+        cliTotalLabel: 'Total Clients', clientsFormTitle: 'Ajouter un client',
+        clientsFormSubmit: 'Ajouter le client', clientsTableTitle: 'Liste des clients',
+        cmdTotalLabel: 'Total Commandes', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      },
+      pharmacie: {
+        navStock: 'Stock', produitSing: 'Médicament', produitPlur: 'Médicaments',
+        stockRefLabel: 'Total Références', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un médicament', stockFormSubmit: 'Ajouter le médicament',
+        stockTableTitle: 'État du stock', prodNomLabel: 'Nom du médicament',
+        dashStockLabel: 'Médicaments en stock',
+        cliTotalLabel: 'Total Patients', clientsFormTitle: 'Ajouter un patient',
+        clientsFormSubmit: 'Ajouter le patient', clientsTableTitle: 'Liste des patients',
+        cmdTotalLabel: 'Total Commandes', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      },
+      grossiste: {
+        navStock: 'Stock', produitSing: 'Article', produitPlur: 'Articles',
+        stockRefLabel: 'Total Références', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un article', stockFormSubmit: 'Ajouter l\'article',
+        stockTableTitle: 'État du stock', prodNomLabel: 'Nom',
+        dashStockLabel: 'Articles en stock',
+        cliTotalLabel: 'Total Clients', clientsFormTitle: 'Ajouter un client',
+        clientsFormSubmit: 'Ajouter le client', clientsTableTitle: 'Liste des clients',
+        cmdTotalLabel: 'Total Commandes Grossiste', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      },
+      autre: {
+        navStock: 'Stock', produitSing: 'Produit', produitPlur: 'Produits',
+        stockRefLabel: 'Total Références', stockValeurLabel: 'Valeur du Stock',
+        stockFormTitle: 'Ajouter un produit', stockFormSubmit: 'Ajouter le produit',
+        stockTableTitle: 'État du stock', prodNomLabel: 'Nom',
+        dashStockLabel: 'Produits en stock',
+        cliTotalLabel: 'Total Clients', clientsFormTitle: 'Ajouter un client',
+        clientsFormSubmit: 'Ajouter le client', clientsTableTitle: 'Liste des clients',
+        cmdTotalLabel: 'Total Commandes', cmdFormTitle: 'Créer une commande',
+        cmdFormSubmit: 'Créer la commande', cmdTableTitle: 'Commandes en cours'
+      }
+    };
+
+    // FONCTIONS/CHAMPS SPÉCIFIQUES SELON LE TYPE D'ENTREPRISE.
+    // Chaque type active un champ "extra" différent sur la fiche produit :
+    // - pharmacie   -> date_peremption (colonne produits.date_peremption)
+    // - restaurant  -> categorie       (colonne produits.categorie)
+    // - grossiste   -> quantite_min_commande (colonne produits.quantite_min_commande),
+    //                  avec validation de la quantité minimum à la commande
+    // Nécessite d'avoir exécuté au préalable dans Supabase :
+    //   ALTER TABLE produits ADD COLUMN IF NOT EXISTS date_peremption date;
+    //   ALTER TABLE produits ADD COLUMN IF NOT EXISTS categorie text;
+    //   ALTER TABLE produits ADD COLUMN IF NOT EXISTS quantite_min_commande integer;
+    const FONCTIONS_PAR_TYPE = {
+      supermarche: { extra: null },
+      boutique:    { extra: null },
+      restaurant:  { extra: 'categorie', extraColLabel: 'Catégorie' },
+      pharmacie:   { extra: 'peremption', extraColLabel: 'Péremption' },
+      grossiste:   { extra: 'qtemin', extraColLabel: 'Qté min' },
+      autre:       { extra: null }
+    };
+
+    function appliquerFonctionsSelonType(type) {
+      const F = FONCTIONS_PAR_TYPE[type] || FONCTIONS_PAR_TYPE.autre;
+
+      // Affiche uniquement le champ "extra" pertinent dans le formulaire produit
+      document.getElementById('prod-extra-pharmacie').style.display = F.extra === 'peremption' ? 'flex' : 'none';
+      document.getElementById('prod-extra-restaurant').style.display = F.extra === 'categorie' ? 'flex' : 'none';
+      document.getElementById('prod-extra-grossiste').style.display = F.extra === 'qtemin' ? 'flex' : 'none';
+
+      // Affiche/masque la colonne "extra" du tableau de stock
+      const table = document.getElementById('stock-table');
+      if (F.extra) {
+        table.classList.remove('no-extra-col');
+        document.getElementById('stock-th-extra').textContent = F.extraColLabel;
+      } else {
+        table.classList.add('no-extra-col');
+      }
+    }
+
+    function libelleTypeEntreprise(compte) {
+      if (!compte) return '';
+      if (compte.type_entreprise === 'autre') return compte.type_entreprise_autre || 'Autre';
+      return TYPES_ENTREPRISE[compte.type_entreprise] || compte.type_entreprise;
+    }
+
+    // Applique les libellés adaptés au type d'entreprise sur toute l'interface :
+    // navigation, titres de section, formulaires et en-têtes de tableaux.
+    function appliquerLabelsSelonType(type) {
+      const L = LABELS_PAR_TYPE[type] || LABELS_PAR_TYPE.autre;
+
+      const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+      setText('nav-label-stock', L.navStock);
+      setText('nav-label-clients', L.cliTotalLabel === 'Total Patients' ? 'Patients' : 'Clients');
+
+      setText('stock-ref-label', L.stockRefLabel);
+      setText('stock-valeur-label', L.stockValeurLabel);
+      setText('stock-form-title', L.stockFormTitle);
+      setText('stock-form-submit', L.stockFormSubmit);
+      setText('stock-table-title', L.stockTableTitle);
+      setText('prod-nom-label', L.prodNomLabel);
+      setText('stock-th-produit', L.produitSing);
+      setText('dash-stock-qty-label', L.dashStockLabel);
+
+      setText('cli-total-label', L.cliTotalLabel);
+      setText('clients-form-title', L.clientsFormTitle);
+      setText('clients-form-submit', L.clientsFormSubmit);
+      setText('clients-table-title', L.clientsTableTitle);
+
+      setText('cmd-total-label', L.cmdTotalLabel);
+      setText('cmd-form-title', L.cmdFormTitle);
+      setText('cmd-produit-label', L.produitSing);
+      setText('cmd-form-submit', L.cmdFormSubmit);
+      setText('cmd-table-title', L.cmdTableTitle);
+      setText('cmd-th-produit', L.produitSing);
+
+      setText('rec-produit-label', L.produitSing);
+      setText('rec-th-produit', L.produitSing);
+
+      // Le libellé du bouton nav "Stock" affiché dans le sous-titre de la page
+      // est repris directement dans l'attribut onclick via le span nav-label-stock,
+      // donc pas d'action supplémentaire nécessaire ici.
+    }
+
+    // Sélection visuelle d'une carte de type d'entreprise
+    document.querySelectorAll('.type-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('onb-type-grid').dataset.selected = card.dataset.type;
+        document.getElementById('onb-autre-row').style.display = card.dataset.type === 'autre' ? 'block' : 'none';
+      });
+    });
+
+    document.getElementById('form-onboarding').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const type = document.getElementById('onb-type-grid').dataset.selected;
+      if (!type) { alert('Choisis un type d\'entreprise.'); return; }
+      const typeAutre = document.getElementById('onb-type-autre').value;
+      if (type === 'autre' && !typeAutre.trim()) { alert('Précise le type d\'entreprise.'); return; }
+
+      const { data, error } = await db.from('comptes').insert([{
+        compte_id: currentUserId,
+        nom_entreprise: document.getElementById('onb-nom').value,
+        type_entreprise: type,
+        type_entreprise_autre: type === 'autre' ? typeAutre : null
+      }]).select().single();
+
+      if (handleDbError("l'enregistrement du profil entreprise", error)) return;
+      currentCompte = data;
+      masquerOnboarding();
+      continuerApresOnboarding();
+    });
 
     // Échappe les caractères HTML dangereux avant toute insertion via innerHTML,
     // pour empêcher qu'un nom/email/description saisi par un utilisateur ne soit
@@ -589,9 +836,9 @@
     }
 
     async function loadProductSelects() {
-      const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
+      const { data } = await db.from('produits').select('id, nom, prix, quantite_min_commande').eq('compte_id', currentUserId);
       if (data) {
-        const options = data.map(p => `<option value="${escapeHtml(p.id)}" data-prix="${escapeHtml(p.prix)}">${escapeHtml(p.nom)}</option>`).join('');
+        const options = data.map(p => `<option value="${escapeHtml(p.id)}" data-prix="${escapeHtml(p.prix)}" data-qtemin="${escapeHtml(p.quantite_min_commande || 1)}">${escapeHtml(p.nom)}</option>`).join('');
         document.getElementById('cmd-produit').innerHTML = options;
         document.getElementById('rec-produit').innerHTML = options;
       }
@@ -600,6 +847,12 @@
     document.getElementById('cmd-produit').addEventListener('change', (e) => {
       const prix = e.target.selectedOptions[0]?.dataset.prix;
       if (prix) document.getElementById('cmd-prix').value = prix;
+      const qtemin = e.target.selectedOptions[0]?.dataset.qtemin;
+      const typeActuel = currentCompte ? currentCompte.type_entreprise : null;
+      if (qtemin && typeActuel === 'grossiste') {
+        document.getElementById('cmd-quantite').min = qtemin;
+        document.getElementById('cmd-quantite').placeholder = `Min. ${qtemin}`;
+      }
     });
     document.getElementById('rec-produit').addEventListener('change', (e) => {
       const prix = e.target.selectedOptions[0]?.dataset.prix;
@@ -634,13 +887,27 @@
     // Handlers de formulaires
     document.getElementById('form-produit').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { error } = await db.from('produits').insert([{
+      const nouveauProduit = {
         compte_id: currentUserId,
         nom: document.getElementById('prod-nom').value,
         prix: parseFloat(document.getElementById('prod-prix').value),
         quantite_stock: parseInt(document.getElementById('prod-stock').value),
         seuil_alerte: parseInt(document.getElementById('prod-seuil').value)
-      }]);
+      };
+
+      // Ajoute le champ spécifique au type d'entreprise, s'il s'applique
+      const typeActuel = currentCompte ? currentCompte.type_entreprise : null;
+      const F = FONCTIONS_PAR_TYPE[typeActuel] || FONCTIONS_PAR_TYPE.autre;
+      if (F.extra === 'peremption') {
+        const val = document.getElementById('prod-peremption').value;
+        if (val) nouveauProduit.date_peremption = val;
+      } else if (F.extra === 'categorie') {
+        nouveauProduit.categorie = document.getElementById('prod-categorie').value;
+      } else if (F.extra === 'qtemin') {
+        nouveauProduit.quantite_min_commande = parseInt(document.getElementById('prod-qte-min').value) || 1;
+      }
+
+      const { error } = await db.from('produits').insert([nouveauProduit]);
       if (handleDbError("l'ajout du produit", error)) return;
       document.getElementById('form-produit').reset();
       loadProducts();
@@ -664,6 +931,18 @@
 
     document.getElementById('form-commande').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Validation de la quantité minimum de commande (grossiste uniquement)
+      const typeActuel = currentCompte ? currentCompte.type_entreprise : null;
+      if (typeActuel === 'grossiste') {
+        const qtemin = parseInt(document.getElementById('cmd-produit').selectedOptions[0]?.dataset.qtemin) || 1;
+        const qteSaisie = parseInt(document.getElementById('cmd-quantite').value);
+        if (qteSaisie < qtemin) {
+          alert(`Quantité minimum de commande pour ce produit : ${qtemin} unités.`);
+          return;
+        }
+      }
+
       const { error } = await db.from('commandes_clients').insert([{
         compte_id: currentUserId,
         client_id: document.getElementById('cmd-client').value,
@@ -749,12 +1028,31 @@
       document.getElementById('stat-stock-valeur').textContent = formatCurrency(valeurStock);
       document.getElementById('stat-stock-alertes').textContent = alertes;
 
+      const typeActuel = currentCompte ? currentCompte.type_entreprise : null;
+      const F = FONCTIONS_PAR_TYPE[typeActuel] || FONCTIONS_PAR_TYPE.autre;
+      const CATEGORIES_LABEL = { entree: 'Entrée', plat: 'Plat', dessert: 'Dessert', boisson: 'Boisson' };
+
       tbody.innerHTML = data.map(p => {
         let badge;
         if (p.quantite_stock === 0) badge = `<span class="badge badge-danger">Rupture</span>`;
         else if (p.quantite_stock <= p.seuil_alerte) badge = `<span class="badge badge-warn">Stock bas</span>`;
         else badge = `<span class="badge badge-ok">OK</span>`;
-        return `<tr><td>${escapeHtml(p.nom)}</td><td>${formatCurrency(p.prix)}</td><td>${p.quantite_stock} u.</td><td>${badge}</td></tr>`;
+
+        let extraCell = '-';
+        if (F.extra === 'peremption') {
+          if (p.date_peremption) {
+            const joursRestants = Math.floor((new Date(p.date_peremption) - new Date()) / (1000 * 60 * 60 * 24));
+            if (joursRestants < 0) extraCell = `<span class="badge badge-danger">Périmé (${escapeHtml(p.date_peremption)})</span>`;
+            else if (joursRestants <= 30) extraCell = `<span class="badge badge-warn">${escapeHtml(p.date_peremption)}</span>`;
+            else extraCell = escapeHtml(p.date_peremption);
+          }
+        } else if (F.extra === 'categorie') {
+          extraCell = p.categorie ? escapeHtml(CATEGORIES_LABEL[p.categorie] || p.categorie) : '-';
+        } else if (F.extra === 'qtemin') {
+          extraCell = p.quantite_min_commande ? `Min: ${p.quantite_min_commande} u.` : '-';
+        }
+
+        return `<tr><td>${escapeHtml(p.nom)}</td><td>${formatCurrency(p.prix)}</td><td>${p.quantite_stock} u.</td><td class="extra-col">${extraCell}</td><td>${badge}</td></tr>`;
       }).join('');
     }
 
@@ -879,14 +1177,62 @@
       return data.statut === 'actif' && (!data.date_expiration || data.date_expiration >= aujourdHui);
     }
 
+    async function verifierCompte(userId) {
+      const { data, error } = await db.from('comptes').select('*').eq('compte_id', userId).maybeSingle();
+      if (error) { console.error('Erreur vérification compte:', error); return null; }
+      return data;
+    }
+
+    function afficherOnboarding() {
+      document.getElementById('onboarding').classList.add('active');
+      document.getElementById('paywall').classList.remove('active');
+      document.getElementById('sidebar').style.display = 'none';
+      document.getElementById('app-screens').style.display = 'none';
+    }
+
+    function masquerOnboarding() {
+      document.getElementById('onboarding').classList.remove('active');
+    }
+
+    async function continuerApresOnboarding() {
+      document.getElementById('entreprise-badge').textContent =
+        currentCompte ? `${currentCompte.nom_entreprise} · ${libelleTypeEntreprise(currentCompte)}` : '';
+
+      if (currentCompte) {
+        appliquerLabelsSelonType(currentCompte.type_entreprise);
+        appliquerFonctionsSelonType(currentCompte.type_entreprise);
+      }
+
+      const abonneActif = await verifierAbonnement(currentUserId);
+      if (!abonneActif) {
+        afficherPaywall();
+        return;
+      }
+      afficherApp();
+
+      loadDashboard();
+      loadProducts();
+      loadClients();
+      loadCommandes();
+      loadFournisseurs();
+      loadReceptions();
+      loadMouvements();
+      loadBilans();
+      loadProductSelects();
+      loadClientsSelects();
+      loadFournisseursSelects();
+    }
+
     function afficherPaywall() {
       document.getElementById('paywall').classList.add('active');
+      document.getElementById('onboarding').classList.remove('active');
       document.getElementById('sidebar').style.display = 'none';
       document.getElementById('app-screens').style.display = 'none';
     }
 
     function afficherApp() {
       document.getElementById('paywall').classList.remove('active');
+      document.getElementById('onboarding').classList.remove('active');
       document.getElementById('sidebar').style.display = 'flex';
       document.getElementById('app-screens').style.display = 'block';
     }
@@ -1038,24 +1384,13 @@
         }
       });
 
-      const abonneActif = await verifierAbonnement(window.Clerk.user.id);
-      if (!abonneActif) {
-        afficherPaywall();
-        return;
+      currentCompte = await verifierCompte(currentUserId);
+      if (!currentCompte) {
+        afficherOnboarding();
+        return; // le formulaire d'onboarding appellera continuerApresOnboarding() lui-même
       }
-      afficherApp();
 
-      loadDashboard();
-      loadProducts();
-      loadClients();
-      loadCommandes();
-      loadFournisseurs();
-      loadReceptions();
-      loadMouvements();
-      loadBilans();
-      loadProductSelects();
-      loadClientsSelects();
-      loadFournisseursSelects();
+      await continuerApresOnboarding();
     });
   </script>
 </body>
