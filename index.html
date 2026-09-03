@@ -532,6 +532,19 @@
     let db = null;
     let currentUserId = null;
 
+    // Échappe les caractères HTML dangereux avant toute insertion via innerHTML,
+    // pour empêcher qu'un nom/email/description saisi par un utilisateur ne soit
+    // interprété comme du code (XSS stocké).
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function switchScreen(screenId, btn, label) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(`screen-${screenId}`).classList.add('active');
@@ -578,7 +591,7 @@
     async function loadProductSelects() {
       const { data } = await db.from('produits').select('id, nom, prix').eq('compte_id', currentUserId);
       if (data) {
-        const options = data.map(p => `<option value="${p.id}" data-prix="${p.prix}">${p.nom}</option>`).join('');
+        const options = data.map(p => `<option value="${escapeHtml(p.id)}" data-prix="${escapeHtml(p.prix)}">${escapeHtml(p.nom)}</option>`).join('');
         document.getElementById('cmd-produit').innerHTML = options;
         document.getElementById('rec-produit').innerHTML = options;
       }
@@ -603,12 +616,12 @@
 
     async function loadClientsSelects() {
       const { data } = await db.from('clients').select('id, nom').eq('compte_id', currentUserId);
-      if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+      if (data) document.getElementById('cmd-client').innerHTML = data.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.nom)}</option>`).join('');
     }
 
     async function loadFournisseursSelects() {
       const { data } = await db.from('fournisseurs').select('id, nom').eq('compte_id', currentUserId);
-      if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
+      if (data) document.getElementById('rec-fournisseur').innerHTML = data.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.nom)}</option>`).join('');
     }
 
     function handleDbError(context, error) {
@@ -741,7 +754,7 @@
         if (p.quantite_stock === 0) badge = `<span class="badge badge-danger">Rupture</span>`;
         else if (p.quantite_stock <= p.seuil_alerte) badge = `<span class="badge badge-warn">Stock bas</span>`;
         else badge = `<span class="badge badge-ok">OK</span>`;
-        return `<tr><td>${p.nom}</td><td>${formatCurrency(p.prix)}</td><td>${p.quantite_stock} u.</td><td>${badge}</td></tr>`;
+        return `<tr><td>${escapeHtml(p.nom)}</td><td>${formatCurrency(p.prix)}</td><td>${p.quantite_stock} u.</td><td>${badge}</td></tr>`;
       }).join('');
     }
 
@@ -749,7 +762,7 @@
       const { data } = await db.from('clients').select('*, created_at').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('stat-cli-total').textContent = data.length;
-      document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${c.nom}</td><td>${c.telephone || '-'}</td><td>${c.email || '-'}</td></tr>`).join('');
+      document.getElementById('tbl-clients').innerHTML = data.map(c => `<tr><td>${escapeHtml(c.nom)}</td><td>${escapeHtml(c.telephone) || '-'}</td><td>${escapeHtml(c.email) || '-'}</td></tr>`).join('');
 
       // Calcul variation clients ce mois-ci vs mois dernier
       const now = new Date();
@@ -785,7 +798,7 @@
 
       document.getElementById('tbl-commandes').innerHTML = data.map(c => {
         let badge = c.statut === 'livree' ? `<span class="badge badge-ok">Livrée</span>` : `<span class="badge">En attente</span>`;
-        return `<tr><td>${c.client ? c.client.nom : '-'}</td><td>${c.produit ? c.produit.nom : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande || c.quantite_commandee * c.prix_unitaire)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
+        return `<tr><td>${c.client ? escapeHtml(c.client.nom) : '-'}</td><td>${c.produit ? escapeHtml(c.produit.nom) : '-'}</td><td>${c.quantite_commandee}</td><td>${formatCurrency(c.total_commande || c.quantite_commandee * c.prix_unitaire)}</td><td>${badge}</td><td><button class="btn btn-small" onclick="updateCommande('${c.id}', 'livree')">Livrer</button></td></tr>`;
       }).join('');
 
       // Variation commandes mois-ci vs mois dernier
@@ -804,7 +817,7 @@
       const { data } = await db.from('fournisseurs').select('*').eq('compte_id', currentUserId).order('created_at', { ascending: false });
       if (!data) return;
       document.getElementById('stat-fourn-tot').textContent = data.length;
-      document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${f.nom}</td><td>${f.telephone || '-'}</td><td>${f.email || '-'}</td></tr>`).join('');
+      document.getElementById('tbl-fournisseurs').innerHTML = data.map(f => `<tr><td>${escapeHtml(f.nom)}</td><td>${escapeHtml(f.telephone) || '-'}</td><td>${escapeHtml(f.email) || '-'}</td></tr>`).join('');
     }
 
     async function loadReceptions() {
@@ -824,13 +837,13 @@
       document.getElementById('stat-rec-valeur').textContent = formatCurrency(totalCout);
       document.getElementById('stat-fourn-achats').textContent = formatCurrency(totalCout);
 
-      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur ? r.fournisseur.nom : '-'}</td><td>${r.produit ? r.produit.nom : '-'}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception || r.quantite_recue * r.prix_unitaire_achat)}</td><td>${r.date_reception}</td></tr>`).join('');
+      document.getElementById('tbl-receptions').innerHTML = data.map(r => `<tr><td>${r.fournisseur ? escapeHtml(r.fournisseur.nom) : '-'}</td><td>${r.produit ? escapeHtml(r.produit.nom) : '-'}</td><td>${r.quantite_recue}</td><td>${formatCurrency(r.total_reception || r.quantite_recue * r.prix_unitaire_achat)}</td><td>${escapeHtml(r.date_reception)}</td></tr>`).join('');
     }
 
     async function loadMouvements() {
       const { data } = await db.from('mouvements_comptables').select('*').eq('compte_id', currentUserId).order('date_mouvement', { ascending: false }).limit(50);
       if (!data) return;
-      document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${m.date_mouvement}</td><td>${m.type}</td><td>${m.description}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
+      document.getElementById('tbl-mouvements').innerHTML = data.map(m => `<tr><td>${escapeHtml(m.date_mouvement)}</td><td>${escapeHtml(m.type)}</td><td>${escapeHtml(m.description)}</td><td>${formatCurrency(m.montant)}</td></tr>`).join('');
     }
 
     async function loadBilans() {
