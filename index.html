@@ -1,27 +1,32 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>E-Gestion — Gestion des travailleurs</title>
-<meta name="description" content="Gestion des travailleurs, activités, heures, salaires, avances et rapports.">
+<meta name="description" content="Plateforme E-Gestion pour gérer travailleurs, activités, pointages, rémunérations, avances, paiements et rapports.">
 <style>
-:root{--bg:#f5f7fb;--panel:#fff;--ink:#142033;--muted:#697586;--line:#e5e9f0;--brand:#d94b45;--brand2:#b93834;--soft:#fff0ef;--ok:#15803d;--warn:#b45309;--danger:#b42318;--shadow:0 10px 30px rgba(20,32,51,.07);--r:16px}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-button,input,select{font:inherit}.shell{display:flex;min-height:100vh}.side{width:245px;background:#111827;color:#fff;padding:20px 14px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;z-index:5}.logo{padding:8px 10px 22px;border-bottom:1px solid #263244;margin-bottom:18px}.logo b{font-size:19px}.logo small{display:block;color:#9aa7b8;margin-top:3px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#aeb9c8;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer;font-weight:600}.nav button:hover,.nav button.active{background:#242f40;color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--brand)}.side-foot{margin-top:auto;color:#8d99aa;font-size:12px;padding:12px}
-.main{margin-left:245px;flex:1}.top{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:4}.top h1{font-size:19px;margin:0}.top small{color:var(--muted)}.content{max-width:1400px;margin:auto;padding:28px}.page{display:none}.page.active{display:block}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:22px}.page-head h2{margin:0 0 5px;font-size:25px}.page-head p{margin:0;color:var(--muted)}
-.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}.btn:hover{background:var(--brand2)}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fff;color:var(--danger);border:1px solid #f1c7c3}.actions{display:flex;gap:8px;flex-wrap:wrap}
+:root{--bg:#f4f6f9;--panel:#fff;--ink:#172033;--muted:#687386;--line:#e2e7ee;--brand:#d94b45;--brand2:#b93a35;--soft:#fff0ee;--ok:#16803d;--warn:#a85a00;--danger:#b42318;--shadow:0 8px 28px rgba(20,32,51,.07);--r:15px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}
+.shell{display:flex;min-height:100vh}.side{width:250px;background:#111827;color:#fff;padding:20px 14px;position:fixed;inset:0 auto 0 0;z-index:5;display:flex;flex-direction:column}.logo{padding:7px 10px 21px;border-bottom:1px solid #263244;margin-bottom:18px}.logo b{font-size:19px}.logo small{display:block;color:#9aa7b8;margin-top:3px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#aeb9c8;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer;font-weight:650}.nav button:hover,.nav button.active{background:#242f40;color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--brand)}.side-foot{margin-top:auto;color:#8d99aa;font-size:12px;padding:12px}
+.main{margin-left:250px;flex:1}.top{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:4}.top h1{font-size:19px;margin:0}.top small{color:var(--muted)}.content{max-width:1450px;margin:auto;padding:28px}.page{display:none}.page.active{display:block}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:22px}.page-head h2{margin:0 0 5px;font-size:25px}.page-head p{margin:0;color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}.btn:hover{background:var(--brand2)}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fff;color:var(--danger);border:1px solid #f0c7c3}.btn.small{padding:7px 10px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}.metric label{color:var(--muted);font-size:13px}.metric strong{display:block;font-size:26px;margin-top:8px}.metric span{font-size:12px;color:var(--muted)}
-.grid2{display:grid;grid-template-columns:1.3fr .7fr;gap:18px}.card h3{margin:0 0 16px;font-size:16px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.empty{text-align:center;color:var(--muted);padding:30px}
-.form{display:grid;gap:14px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}.field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none}.field input:focus,.field select:focus{border-color:var(--brand)}.full{grid-column:1/-1}
-.badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;background:#eef2f6;color:#536071}.badge.ok{background:#eaf7ee;color:var(--ok)}.badge.warn{background:#fff4df;color:var(--warn)}
-.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.search{max-width:320px;width:100%}.notice{padding:12px 14px;background:var(--soft);border:1px solid #f3ceca;border-radius:11px;color:#8f302b;font-size:13px;margin-bottom:16px}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modal-box{background:#fff;border-radius:18px;width:min(600px,100%);padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.2)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{border:0;background:#f2f4f7;border-radius:8px;padding:7px 10px;cursor:pointer}
-@media(max-width:900px){.side{width:70px;padding:14px 8px}.logo b{font-size:0}.logo b:after{content:'E';font-size:20px}.logo small,.nav button span,.side-foot{display:none}.nav button{text-align:center}.main{margin-left:70px}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.content{padding:20px}}
-@media(max-width:600px){.top{padding:0 16px}.content{padding:15px}.cards,.form-grid{grid-template-columns:1fr}.page-head{align-items:flex-start;flex-direction:column}.table th,.table td{font-size:12px}}
-</style></head>
+.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card h3{margin:0 0 16px;font-size:16px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;white-space:nowrap}.table th{color:var(--muted);font-size:11px;text-transform:uppercase}.empty{text-align:center;color:var(--muted);padding:30px}
+.form{display:grid;gap:14px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}.field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;outline:none;color:var(--ink)}.field input:focus,.field select:focus{border-color:var(--brand)}.full{grid-column:1/-1}
+.badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;background:#eef2f6;color:#536071}.badge.ok{background:#eaf7ee;color:var(--ok)}.badge.warn{background:#fff4df;color:var(--warn)}.badge.danger{background:#fdeceb;color:var(--danger)}
+.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.search{max-width:360px;width:100%}.notice{padding:12px 14px;background:var(--soft);border:1px solid #f3ceca;border-radius:11px;color:#8f302b;font-size:13px;margin-bottom:16px}.statline{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.statline:last-child{border-bottom:0}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modal-box{background:#fff;border-radius:18px;width:min(720px,100%);max-height:90vh;overflow:auto;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.2)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modal-head h3{margin:0}.close{border:0;background:#f2f4f7;border-radius:8px;padding:7px 10px;cursor:pointer}.profile-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}.profile-name{font-size:25px;font-weight:800}.profile-meta{color:var(--muted);font-size:13px;margin-top:5px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}.kpi{background:#f7f8fa;border:1px solid var(--line);border-radius:12px;padding:13px}.kpi span{display:block;color:var(--muted);font-size:11px}.kpi b{display:block;font-size:17px;margin-top:5px}
+.print-only{display:none}
+@media(max-width:1000px){.side{width:72px;padding:14px 8px}.logo b{font-size:0}.logo b:after{content:'E';font-size:20px}.logo small,.nav button span,.side-foot{display:none}.nav button{text-align:center}.main{margin-left:72px}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}.content{padding:20px}}
+@media(max-width:620px){.top{padding:0 15px}.content{padding:15px}.cards,.form-grid,.kpis{grid-template-columns:1fr}.page-head{align-items:flex-start;flex-direction:column}.table th,.table td{font-size:12px}.top .btn{display:none}}
+@media print{body{background:#fff}.side,.top,.page-head .btn,.actions,.toolbar button,.toolbar input,.modal{display:none!important}.main{margin:0}.content{padding:0}.page{display:none!important}.page#reports{display:block!important}.card{box-shadow:none;border:0}.print-only{display:block}}
+</style>
+</head>
 <body>
 <div class="shell">
-<aside class="side"><div class="logo"><b>E-Gestion</b><small>E-INFORMATIQUE</small></div>
+<aside class="side">
+<div class="logo"><b>E-Gestion</b><small>E-INFORMATIQUE</small></div>
 <nav class="nav">
 <button class="active" data-page="dashboard"><span>Tableau de bord</span></button>
 <button data-page="workers"><span>Travailleurs</span></button>
@@ -29,83 +34,163 @@ button,input,select{font:inherit}.shell{display:flex;min-height:100vh}.side{widt
 <button data-page="hours"><span>Pointage</span></button>
 <button data-page="payments"><span>Avances & paiements</span></button>
 <button data-page="reports"><span>Rapports</span></button>
-</nav><div class="side-foot">Version 1.0<br>Gestion professionnelle</div></aside>
-<main class="main"><header class="top"><div><h1 id="title">Tableau de bord</h1><small id="date"></small></div><div><button class="btn secondary" onclick="resetDemo()">Réinitialiser les données</button></div></header>
+</nav>
+<div class="side-foot">Version 1.1<br>Gestion professionnelle</div>
+</aside>
+
+<main class="main">
+<header class="top"><div><h1 id="title">Tableau de bord</h1><small id="date"></small></div><button class="btn secondary" onclick="resetAll()">Réinitialiser les données</button></header>
 <div class="content">
 
 <section id="dashboard" class="page active">
-<div class="page-head"><div><h2>Vue d’ensemble</h2><p>Suivez les heures, rémunérations et montants restant à payer.</p></div><button class="btn" onclick="openModal('workerModal')">Ajouter un travailleur</button></div>
+<div class="page-head"><div><h2>Vue d’ensemble</h2><p>Suivez les heures, rémunérations, avances, paiements et soldes.</p></div><div class="actions"><button class="btn secondary" onclick="go('reports')">Voir les rapports</button><button class="btn" onclick="openModal('workerModal')">Ajouter un travailleur</button></div></div>
 <div class="cards">
-<div class="card metric"><label>Travailleurs</label><strong id="mWorkers">0</strong><span>actifs dans le système</span></div>
-<div class="card metric"><label>Heures enregistrées</label><strong id="mHours">0 h</strong><span>toutes activités</span></div>
-<div class="card metric"><label>Rémunération</label><strong id="mGross">0 FCFA</strong><span>avant avances et paiements</span></div>
+<div class="card metric"><label>Travailleurs</label><strong id="mWorkers">0</strong><span>enregistrés</span></div>
+<div class="card metric"><label>Heures</label><strong id="mHours">0 h</strong><span>toutes activités</span></div>
+<div class="card metric"><label>Rémunération</label><strong id="mGross">0 FCFA</strong><span>brut cumulé</span></div>
 <div class="card metric"><label>Reste à payer</label><strong id="mDue">0 FCFA</strong><span>après avances et paiements</span></div>
 </div>
-<div class="grid2"><div class="card"><h3>Derniers pointages</h3><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Activité</th><th>Heures</th><th>Montant</th></tr></thead><tbody id="dashHours"></tbody></table></div></div>
-<div class="card"><h3>Répartition des rémunérations</h3><div id="activitySummary"></div></div></div>
+<div class="grid2">
+<div class="card"><h3>Derniers pointages</h3><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Activité</th><th>Heures</th><th>Montant</th></tr></thead><tbody id="dashHours"></tbody></table></div></div>
+<div class="card"><h3>Rémunération par activité</h3><div id="activitySummary"></div></div>
+</div>
 </section>
 
-<section id="workers" class="page"><div class="page-head"><div><h2>Travailleurs</h2><p>Chaque fiche conserve l'historique complet des activités et paiements.</p></div><button class="btn" onclick="openModal('workerModal')">Ajouter</button></div>
-<div class="card"><div class="toolbar"><input class="field input search" id="workerSearch" placeholder="Rechercher un travailleur..." oninput="renderWorkers()"></div><div class="table-wrap"><table class="table"><thead><tr><th>Nom</th><th>Téléphone</th><th>Activités</th><th>Heures</th><th>Gains</th><th>Avances/paiements</th><th>Reste</th><th></th></tr></thead><tbody id="workersTable"></tbody></table></div></div></section>
+<section id="workers" class="page">
+<div class="page-head"><div><h2>Travailleurs</h2><p>Fiche individuelle, activités, heures, gains, avances, paiements et solde.</p></div><button class="btn" onclick="openModal('workerModal')">Ajouter un travailleur</button></div>
+<div class="card"><div class="toolbar"><input class="field search" id="workerSearch" placeholder="Rechercher par nom, téléphone ou référence..." oninput="renderWorkers()"></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Travailleur</th><th>Téléphone</th><th>Activités</th><th>Heures</th><th>Gains</th><th>Versé</th><th>Reste</th><th>Action</th></tr></thead><tbody id="workersTable"></tbody></table></div></div>
+</section>
 
-<section id="activities" class="page"><div class="page-head"><div><h2>Activités</h2><p>Le responsable peut ajouter autant d'activités que nécessaire.</p></div><button class="btn" onclick="openModal('activityModal')">Ajouter une activité</button></div>
-<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Activité</th><th>Taux horaire</th><th>Travailleurs</th><th>Heures</th><th>Rémunération</th><th></th></tr></thead><tbody id="activitiesTable"></tbody></table></div></div></section>
+<section id="activities" class="page">
+<div class="page-head"><div><h2>Activités</h2><p>Ajoutez autant d’activités que nécessaire et définissez le taux horaire.</p></div><button class="btn" onclick="openModal('activityModal')">Ajouter une activité</button></div>
+<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Activité</th><th>Taux actuel</th><th>Travailleurs</th><th>Heures</th><th>Rémunération</th><th>Action</th></tr></thead><tbody id="activitiesTable"></tbody></table></div></div>
+</section>
 
-<section id="hours" class="page"><div class="page-head"><div><h2>Pointage des heures</h2><p>Une journée normale est de 8 heures. Les heures peuvent être réparties entre plusieurs activités.</p></div><button class="btn" onclick="openModal('hourModal')">Enregistrer des heures</button></div>
-<div class="notice">Le taux horaire est conservé dans chaque pointage : modifier le taux d'une activité n'altère pas les anciens calculs.</div>
-<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Activité</th><th>Heures</th><th>Taux</th><th>Montant</th><th></th></tr></thead><tbody id="hoursTable"></tbody></table></div></div></section>
+<section id="hours" class="page">
+<div class="page-head"><div><h2>Pointage des heures</h2><p>Une journée normale est de 8 h, mais les heures peuvent être réparties entre plusieurs activités.</p></div><button class="btn" onclick="openModal('hourModal')">Enregistrer des heures</button></div>
+<div class="notice">Le taux appliqué est enregistré dans chaque pointage. Une modification future du taux ne change donc pas les rémunérations historiques.</div>
+<div class="card"><div class="toolbar"><input class="field search" id="hourSearch" placeholder="Rechercher un travailleur ou une activité..." oninput="renderHours()"><select class="field" id="hourMonth" onchange="renderHours()" style="max-width:180px"><option value="">Toutes les dates</option></select></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Activité</th><th>Heures</th><th>Taux</th><th>Montant</th><th>Action</th></tr></thead><tbody id="hoursTable"></tbody></table></div></div>
+</section>
 
-<section id="payments" class="page"><div class="page-head"><div><h2>Avances & paiements</h2><p>Enregistrez les avances et les sommes déjà versées sans double déduction.</p></div><button class="btn" onclick="openModal('paymentModal')">Enregistrer un paiement</button></div>
-<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Type</th><th>Montant</th><th>Note</th><th></th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div></section>
+<section id="payments" class="page">
+<div class="page-head"><div><h2>Avances & paiements</h2><p>Enregistrez chaque avance ou paiement avec sa date et sa note.</p></div><button class="btn" onclick="openModal('paymentModal')">Enregistrer</button></div>
+<div class="grid3">
+<div class="card metric"><label>Total des avances</label><strong id="pAdv">0 FCFA</strong></div>
+<div class="card metric"><label>Total des paiements</label><strong id="pPaid">0 FCFA</strong></div>
+<div class="card metric"><label>Total versé</label><strong id="pTotal">0 FCFA</strong></div>
+</div>
+<div class="card"><div class="toolbar"><input class="field search" id="paymentSearch" placeholder="Rechercher un travailleur..." oninput="renderPayments()"><select class="field" id="paymentTypeFilter" onchange="renderPayments()" style="max-width:180px"><option value="">Tous les types</option><option>Avance</option><option>Paiement</option></select></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Travailleur</th><th>Type</th><th>Montant</th><th>Note</th><th>Action</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div>
+</section>
 
-<section id="reports" class="page"><div class="page-head"><div><h2>Rapports</h2><p>Préparez le rapport journalier ou mensuel et exportez les données.</p></div><div class="actions"><button class="btn secondary" onclick="exportCSV()">Exporter Excel (CSV)</button><button class="btn" onclick="window.print()">Imprimer / PDF</button></div></div>
-<div class="card" id="reportCard"><h3>État des rémunérations</h3><div class="table-wrap"><table class="table"><thead><tr><th>Travailleur</th><th>Heures</th><th>Rémunération</th><th>Avances & paiements</th><th>Reste dû</th></tr></thead><tbody id="reportTable"></tbody></table></div></div></section>
+<section id="reports" class="page">
+<div class="page-head"><div><h2>Rapports</h2><p>Rapport journalier, mensuel, par activité ou par travailleur.</p></div><div class="actions"><button class="btn secondary" onclick="exportCSV()">Exporter Excel (CSV)</button><button class="btn" onclick="window.print()">Imprimer / PDF</button></div></div>
+<div class="card">
+<div class="form-grid">
+<div class="field"><label>Période</label><select id="reportPeriod" onchange="renderReport()"><option value="all">Toute la période</option><option value="day">Journée</option><option value="month">Mois</option></select></div>
+<div class="field"><label>Date de référence</label><input id="reportDate" type="date" onchange="renderReport()"></div>
+<div class="field"><label>Travailleur</label><select id="reportWorker" onchange="renderReport()"><option value="">Tous</option></select></div>
+<div class="field"><label>Activité</label><select id="reportActivity" onchange="renderReport()"><option value="">Toutes</option></select></div>
+</div>
+</div>
+<div class="grid3" style="margin-top:15px">
+<div class="card metric"><label>Heures de la sélection</label><strong id="rHours">0 h</strong></div>
+<div class="card metric"><label>Rémunération</label><strong id="rGross">0 FCFA</strong></div>
+<div class="card metric"><label>Versé</label><strong id="rPaid">0 FCFA</strong></div>
+</div>
+<div class="card" id="reportCard"><h3>État des rémunérations</h3><div class="table-wrap"><table class="table"><thead><tr><th>Travailleur</th><th>Activité</th><th>Heures</th><th>Rémunération</th><th>Versé</th><th>Reste</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+</section>
+
 </div></main></div>
 
 <div class="modal" id="workerModal"><div class="modal-box"><div class="modal-head"><h3>Ajouter un travailleur</h3><button class="close" onclick="closeModal('workerModal')">Fermer</button></div><form class="form" onsubmit="addWorker(event)"><div class="form-grid"><div class="field"><label>Nom complet</label><input id="wName" required></div><div class="field"><label>Téléphone</label><input id="wPhone"></div><div class="field full"><label>Identifiant / référence</label><input id="wRef" placeholder="Ex. TRV-001"></div></div><button class="btn">Enregistrer</button></form></div></div>
 
-<div class="modal" id="activityModal"><div class="modal-box"><div class="modal-head"><h3>Ajouter une activité</h3><button class="close" onclick="closeModal('activityModal')">Fermer</button></div><form class="form" onsubmit="addActivity(event)"><div class="form-grid"><div class="field"><label>Nom de l'activité</label><input id="aName" placeholder="Ex. Semence" required></div><div class="field"><label>Taux horaire (FCFA)</label><input id="aRate" type="number" min="0" required></div></div><button class="btn">Enregistrer</button></form></div></div>
+<div class="modal" id="activityModal"><div class="modal-box"><div class="modal-head"><h3>Ajouter une activité</h3><button class="close" onclick="closeModal('activityModal')">Fermer</button></div><form class="form" onsubmit="addActivity(event)"><div class="form-grid"><div class="field"><label>Nom de l'activité</label><input id="aName" required></div><div class="field"><label>Taux horaire (FCFA)</label><input id="aRate" type="number" min="0" step="1" required></div></div><button class="btn">Enregistrer</button></form></div></div>
 
-<div class="modal" id="hourModal"><div class="modal-box"><div class="modal-head"><h3>Enregistrer des heures</h3><button class="close" onclick="closeModal('hourModal')">Fermer</button></div><form class="form" onsubmit="addHours(event)"><div class="form-grid"><div class="field"><label>Date</label><input id="hDate" type="date" required></div><div class="field"><label>Travailleur</label><select id="hWorker" required></select></div><div class="field"><label>Activité</label><select id="hActivity" required></select></div><div class="field"><label>Heures</label><input id="hHours" type="number" min="0.25" max="24" step="0.25" required></div></div><button class="btn">Enregistrer le pointage</button></form></div></div>
+<div class="modal" id="hourModal"><div class="modal-box"><div class="modal-head"><h3>Enregistrer des heures</h3><button class="close" onclick="closeModal('hourModal')">Fermer</button></div><form class="form" onsubmit="addHours(event)"><div class="form-grid"><div class="field"><label>Date</label><input id="hDate" type="date" required></div><div class="field"><label>Travailleur</label><select id="hWorker" required></select></div><div class="field"><label>Activité</label><select id="hActivity" required></select></div><div class="field"><label>Heures</label><input id="hHours" type="number" min=".25" max="24" step=".25" required></div><div class="field full"><label>Note</label><input id="hNote" placeholder="Facultatif"></div></div><button class="btn">Enregistrer le pointage</button></form></div></div>
 
-<div class="modal" id="paymentModal"><div class="modal-box"><div class="modal-head"><h3>Avance ou paiement</h3><button class="close" onclick="closeModal('paymentModal')">Fermer</button></div><form class="form" onsubmit="addPayment(event)"><div class="form-grid"><div class="field"><label>Date</label><input id="pDate" type="date" required></div><div class="field"><label>Travailleur</label><select id="pWorker" required></select></div><div class="field"><label>Type</label><select id="pType"><option>Avance</option><option>Paiement</option></select></div><div class="field"><label>Montant (FCFA)</label><input id="pAmount" type="number" min="0" required></div><div class="field full"><label>Note</label><input id="pNote"></div></div><button class="btn">Enregistrer</button></form></div></div>
+<div class="modal" id="paymentModal"><div class="modal-box"><div class="modal-head"><h3>Avance ou paiement</h3><button class="close" onclick="closeModal('paymentModal')">Fermer</button></div><form class="form" onsubmit="addPayment(event)"><div class="form-grid"><div class="field"><label>Date</label><input id="pDate" type="date" required></div><div class="field"><label>Travailleur</label><select id="pWorker" required></select></div><div class="field"><label>Type</label><select id="pType"><option>Avance</option><option>Paiement</option></select></div><div class="field"><label>Montant (FCFA)</label><input id="pAmount" type="number" min="1" required></div><div class="field full"><label>Note</label><input id="pNote"></div></div><button class="btn">Enregistrer</button></form></div></div>
+
+<div class="modal" id="workerDetailModal"><div class="modal-box"><div class="modal-head"><h3>Fiche du travailleur</h3><button class="close" onclick="closeModal('workerDetailModal')">Fermer</button></div><div id="workerDetail"></div></div></div>
 
 <script>
-const KEY='e_gestion_workers_v1';
-let state=JSON.parse(localStorage.getItem(KEY)||'null')||{workers:[],activities:[{id:'a1',name:'Semence',rate:500},{id:'a2',name:'Barrage',rate:600},{id:'a3',name:'Entretien',rate:500}],hours:[],payments:[]};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
-const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const money=n=>new Intl.NumberFormat('fr-FR').format(Math.round(n||0))+' FCFA';
-const worker=x=>state.workers.find(w=>w.id===x);
-const activity=x=>state.activities.find(a=>a.id===x);
-function totals(wid){let hrs=state.hours.filter(x=>x.workerId===wid);let gross=hrs.reduce((s,x)=>s+x.hours*x.rate,0);let paid=state.payments.filter(x=>x.workerId===wid).reduce((s,x)=>s+x.amount,0);return{hours:hrs.reduce((s,x)=>s+x.hours,0),gross,paid,due:Math.max(0,gross-paid)}}
-function render(){
-document.getElementById('date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-let all=state.workers.map(w=>totals(w.id)), gross=all.reduce((s,x)=>s+x.gross,0), due=all.reduce((s,x)=>s+x.due,0), hours=all.reduce((s,x)=>s+x.hours,0);
-mWorkers.textContent=state.workers.length;mHours.textContent=hours+' h';mGross.textContent=money(gross);mDue.textContent=money(due);
-renderWorkers();renderActivities();renderHours();renderPayments();renderReport();renderDashboard();fillSelects();
-}
-function renderWorkers(){let q=(workerSearch.value||'').toLowerCase();workersTable.innerHTML=state.workers.filter(w=>w.name.toLowerCase().includes(q)).map(w=>{let t=totals(w.id);let acts=[...new Set(state.hours.filter(x=>x.workerId===w.id).map(x=>activity(x.activityId)?.name))].filter(Boolean).join(', ')||'-';return '<tr><td><b>'+esc(w.name)+'</b><br><small>'+esc(w.ref||'')+'</small></td><td>'+esc(w.phone||'-')+'</td><td>'+esc(acts)+'</td><td>'+t.hours+' h</td><td>'+money(t.gross)+'</td><td>'+money(t.paid)+'</td><td><b>'+money(t.due)+'</b></td><td><button class="btn danger" onclick="delWorker(\''+w.id+'\')">Supprimer</button></td></tr>'}).join('')||'<tr><td colspan="8" class="empty">Aucun travailleur enregistré.</td></tr>'}
-function renderActivities(){activitiesTable.innerHTML=state.activities.map(a=>{let hs=state.hours.filter(x=>x.activityId===a.id);let hrs=hs.reduce((s,x)=>s+x.hours,0),earn=hs.reduce((s,x)=>s+x.hours*x.rate,0),ws=new Set(hs.map(x=>x.workerId)).size;return '<tr><td><b>'+esc(a.name)+'</b></td><td>'+money(a.rate)+'/h</td><td>'+ws+'</td><td>'+hrs+' h</td><td>'+money(earn)+'</td><td><button class="btn danger" onclick="delActivity(\''+a.id+'\')">Supprimer</button></td></tr>'}).join('')||'<tr><td colspan="6" class="empty">Aucune activité.</td></tr>'}
-function renderHours(){hoursTable.innerHTML=state.hours.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td>'+esc(activity(x.activityId)?.name||'-')+'</td><td>'+x.hours+' h</td><td>'+money(x.rate)+'</td><td>'+money(x.hours*x.rate)+'</td><td><button class="btn danger" onclick="delHour(\''+x.id+'\')">Supprimer</button></td></tr>').join('')||'<tr><td colspan="7" class="empty">Aucun pointage.</td></tr>'}
-function renderPayments(){paymentsTable.innerHTML=state.payments.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td><span class="badge '+(x.type==='Paiement'?'ok':'warn')+'">'+x.type+'</span></td><td>'+money(x.amount)+'</td><td>'+esc(x.note||'-')+'</td><td><button class="btn danger" onclick="delPayment(\''+x.id+'\')">Supprimer</button></td></tr>').join('')||'<tr><td colspan="6" class="empty">Aucun paiement.</td></tr>'}
-function renderReport(){reportTable.innerHTML=state.workers.map(w=>{let t=totals(w.id);return '<tr><td><b>'+esc(w.name)+'</b></td><td>'+t.hours+' h</td><td>'+money(t.gross)+'</td><td>'+money(t.paid)+'</td><td><b>'+money(t.due)+'</b></td></tr>'}).join('')||'<tr><td colspan="5" class="empty">Aucune donnée.</td></tr>'}
-function renderDashboard(){dashHours.innerHTML=state.hours.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td>'+esc(activity(x.activityId)?.name||'-')+'</td><td>'+x.hours+' h</td><td>'+money(x.hours*x.rate)+'</td></tr>').join('')||'<tr><td colspan="5" class="empty">Aucun pointage.</td></tr>';activitySummary.innerHTML=state.activities.map(a=>{let v=state.hours.filter(x=>x.activityId===a.id).reduce((s,x)=>s+x.hours*x.rate,0);return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>'+esc(a.name)+'</span><b>'+money(v)+'</b></div>'}).join('')||'<div class="empty">Aucune donnée</div>'}
-function fillSelects(){let opts=state.workers.map(w=>'<option value="'+w.id+'">'+esc(w.name)+'</option>').join('');hWorker.innerHTML=opts;pWorker.innerHTML=opts;hActivity.innerHTML=state.activities.map(a=>'<option value="'+a.id+'">'+esc(a.name)+' — '+money(a.rate)+'/h</option>').join('')}
-function addWorker(e){e.preventDefault();state.workers.push({id:id(),name:wName.value.trim(),phone:wPhone.value.trim(),ref:wRef.value.trim()});save();closeModal('workerModal');e.target.reset();render()}
-function addActivity(e){e.preventDefault();state.activities.push({id:id(),name:aName.value.trim(),rate:Number(aRate.value)});save();closeModal('activityModal');e.target.reset();render()}
-function addHours(e){e.preventDefault();let a=activity(hActivity.value);state.hours.push({id:id(),date:hDate.value,workerId:hWorker.value,activityId:hActivity.value,hours:Number(hHours.value),rate:Number(a.rate)});save();closeModal('hourModal');e.target.reset();hDate.value=new Date().toISOString().slice(0,10);render()}
-function addPayment(e){e.preventDefault();state.payments.push({id:id(),date:pDate.value,workerId:pWorker.value,type:pType.value,amount:Number(pAmount.value),note:pNote.value.trim()});save();closeModal('paymentModal');e.target.reset();pDate.value=new Date().toISOString().slice(0,10);render()}
-function delWorker(x){if(confirm('Supprimer ce travailleur et son historique ?')){state.workers=state.workers.filter(w=>w.id!==x);state.hours=state.hours.filter(h=>h.workerId!==x);state.payments=state.payments.filter(p=>p.workerId!==x);save();render()}}
-function delActivity(x){if(confirm('Supprimer cette activité et ses pointages ?')){state.activities=state.activities.filter(a=>a.id!==x);state.hours=state.hours.filter(h=>h.activityId!==x);save();render()}}
-function delHour(x){state.hours=state.hours.filter(h=>h.id!==x);save();render()}function delPayment(x){state.payments=state.payments.filter(p=>p.id!==x);save();render()}
-function openModal(x){if(!state.workers.length&&(x==='hourModal'||x==='paymentModal')){alert('Ajoutez d’abord un travailleur.');return}document.getElementById(x).classList.add('show');if(x==='hourModal')hDate.value=new Date().toISOString().slice(0,10);if(x==='paymentModal')pDate.value=new Date().toISOString().slice(0,10)}
-function closeModal(x){document.getElementById(x).classList.remove('show')}
+const KEY='e_gestion_workers_v2';
+const today=()=>new Date().toISOString().slice(0,10);
+let state=JSON.parse(localStorage.getItem(KEY)||'null');
+if(!state){state={workers:[],activities:[{id:'a1',name:'Semence',rate:500},{id:'a2',name:'Barrage',rate:600},{id:'a3',name:'Entretien',rate:500}],hours:[],payments:[]};save()}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function money(n){return new Intl.NumberFormat('fr-FR').format(Math.round(n||0))+' FCFA'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function exportCSV(){let rows=[['Travailleur','Heures','Rémunération','Avances et paiements','Reste dû'],...state.workers.map(w=>{let t=totals(w.id);return[w.name,t.hours,t.gross,t.paid,t.due]})];let csv='\\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='rapport-remunerations.csv';a.click()}
-function resetDemo(){if(confirm('Effacer toutes les données du site ?')){localStorage.removeItem(KEY);location.reload()}}
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');title.textContent=b.querySelector('span').textContent});
+function worker(id){return state.workers.find(x=>x.id===id)}
+function activity(id){return state.activities.find(x=>x.id===id)}
+function totals(wid){let hs=state.hours.filter(x=>x.workerId===wid), ps=state.payments.filter(x=>x.workerId===wid);let gross=hs.reduce((s,x)=>s+x.hours*x.rate,0),paid=ps.reduce((s,x)=>s+x.amount,0);return{hours:hs.reduce((s,x)=>s+x.hours,0),gross,paid,due:Math.max(0,gross-paid)}}
+function go(page){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));let b=document.querySelector('.nav button[data-page="'+page+'"]');title.textContent=b?b.querySelector('span').textContent:page;window.scrollTo(0,0)}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function render(){
+date.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+let ts=state.workers.map(w=>totals(w.id));mWorkers.textContent=state.workers.length;mHours.textContent=ts.reduce((s,t)=>s+t.hours,0)+' h';mGross.textContent=money(ts.reduce((s,t)=>s+t.gross,0));mDue.textContent=money(ts.reduce((s,t)=>s+t.due,0));
+renderWorkers();renderActivities();renderHours();renderPayments();renderReports();renderDashboard();fillSelects()
+}
+function renderWorkers(){
+let q=(workerSearch.value||'').toLowerCase();
+workersTable.innerHTML=state.workers.filter(w=>(w.name+' '+(w.phone||'')+' '+(w.ref||'')).toLowerCase().includes(q)).map(w=>{let t=totals(w.id),acts=[...new Set(state.hours.filter(x=>x.workerId===w.id).map(x=>activity(x.activityId)?.name))].filter(Boolean).join(', ')||'-';return '<tr><td><b>'+esc(w.name)+'</b><br><small>'+esc(w.ref||'')+'</small></td><td>'+esc(w.phone||'-')+'</td><td>'+esc(acts)+'</td><td>'+t.hours+' h</td><td>'+money(t.gross)+'</td><td>'+money(t.paid)+'</td><td><b>'+money(t.due)+'</b></td><td><button class="btn small secondary" onclick="showWorker(\''+w.id+'\')">Fiche</button> <button class="btn small danger" onclick="delWorker(\''+w.id+'\')">Supprimer</button></td></tr>'}).join('')||'<tr><td colspan="8" class="empty">Aucun travailleur enregistré.</td></tr>'
+}
+function renderActivities(){activitiesTable.innerHTML=state.activities.map(a=>{let hs=state.hours.filter(x=>x.activityId===a.id),hrs=hs.reduce((s,x)=>s+x.hours,0),earn=hs.reduce((s,x)=>s+x.hours*x.rate,0),ws=new Set(hs.map(x=>x.workerId)).size;return '<tr><td><b>'+esc(a.name)+'</b></td><td>'+money(a.rate)+'/h</td><td>'+ws+'</td><td>'+hrs+' h</td><td>'+money(earn)+'</td><td><button class="btn small danger" onclick="delActivity(\''+a.id+'\')">Supprimer</button></td></tr>'}).join('')||'<tr><td colspan="6" class="empty">Aucune activité.</td></tr>'}
+function renderHours(){
+let q=(hourSearch.value||'').toLowerCase(),month=hourMonth.value;
+let rows=state.hours.filter(x=>{let w=worker(x.workerId)?.name||'',a=activity(x.activityId)?.name||'';return(!q||(w+' '+a).toLowerCase().includes(q))&&(!month||x.date.startsWith(month))}).sort((a,b)=>b.date.localeCompare(a.date));
+hoursTable.innerHTML=rows.map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td>'+esc(activity(x.activityId)?.name||'-')+'</td><td>'+x.hours+' h</td><td>'+money(x.rate)+'</td><td>'+money(x.hours*x.rate)+'</td><td><button class="btn small danger" onclick="delHour(\''+x.id+'\')">Supprimer</button></td></tr>').join('')||'<tr><td colspan="7" class="empty">Aucun pointage pour cette sélection.</td></tr>'
+}
+function renderPayments(){
+let q=(paymentSearch.value||'').toLowerCase(),type=paymentTypeFilter.value;
+let rows=state.payments.filter(x=>(worker(x.workerId)?.name||'').toLowerCase().includes(q)&&(!type||x.type===type)).sort((a,b)=>b.date.localeCompare(a.date));
+let adv=state.payments.filter(x=>x.type==='Avance').reduce((s,x)=>s+x.amount,0),paid=state.payments.filter(x=>x.type==='Paiement').reduce((s,x)=>s+x.amount,0);pAdv.textContent=money(adv);pPaid.textContent=money(paid);pTotal.textContent=money(adv+paid);
+paymentsTable.innerHTML=rows.map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td><span class="badge '+(x.type==='Paiement'?'ok':'warn')+'">'+x.type+'</span></td><td>'+money(x.amount)+'</td><td>'+esc(x.note||'-')+'</td><td><button class="btn small danger" onclick="delPayment(\''+x.id+'\')">Supprimer</button></td></tr>').join('')||'<tr><td colspan="6" class="empty">Aucun mouvement.</td></tr>'
+}
+function reportHours(){
+let period=reportPeriod.value,d=reportDate.value,wid=reportWorker.value,aid=reportActivity.value;
+return state.hours.filter(x=>(!wid||x.workerId===wid)&&(!aid||x.activityId===aid)&&(!d||period==='all'||(period==='day'&&x.date===d)||(period==='month'&&x.date.startsWith(d.slice(0,7)))))
+}
+function renderReports(){
+let rows=reportHours(),by={};rows.forEach(x=>{let k=x.workerId+'|'+x.activityId;by[k]??={wid:x.workerId,aid:x.activityId,h:0,g:0};by[k].h+=x.hours;by[k].g+=x.hours*x.rate});
+let paid=state.payments.filter(p=>(!reportWorker.value||p.workerId===reportWorker.value)&&(!reportDate.value||reportPeriod.value==='all'||(reportPeriod.value==='day'&&p.date===reportDate.value)||(reportPeriod.value==='month'&&p.date.startsWith(reportDate.value.slice(0,7)))));
+let totalH=rows.reduce((s,x)=>s+x.hours,0),gross=rows.reduce((s,x)=>s+x.hours*x.rate,0),p=paid.reduce((s,x)=>s+x.amount,0);rHours.textContent=totalH+' h';rGross.textContent=money(gross);rPaid.textContent=money(p);
+reportTable.innerHTML=Object.values(by).map(x=>{let share=state.payments.filter(z=>z.workerId===x.wid).reduce((s,z)=>s+z.amount,0);let due=Math.max(0,x.g-share);return '<tr><td>'+esc(worker(x.wid)?.name||'-')+'</td><td>'+esc(activity(x.aid)?.name||'-')+'</td><td>'+x.h+' h</td><td>'+money(x.g)+'</td><td>'+money(Math.min(share,x.g))+'</td><td><b>'+money(due)+'</b></td></tr>'}).join('')||'<tr><td colspan="6" class="empty">Aucune donnée pour cette sélection.</td></tr>'
+}
+function renderDashboard(){dashHours.innerHTML=state.hours.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8).map(x=>'<tr><td>'+x.date+'</td><td>'+esc(worker(x.workerId)?.name||'-')+'</td><td>'+esc(activity(x.activityId)?.name||'-')+'</td><td>'+x.hours+' h</td><td>'+money(x.hours*x.rate)+'</td></tr>').join('')||'<tr><td colspan="5" class="empty">Aucun pointage.</td></tr>';activitySummary.innerHTML=state.activities.map(a=>{let v=state.hours.filter(x=>x.activityId===a.id).reduce((s,x)=>s+x.hours*x.rate,0);return '<div class="statline"><span>'+esc(a.name)+'</span><b>'+money(v)+'</b></div>'}).join('')||'<div class="empty">Aucune donnée.</div>'}
+function fillSelects(){
+let opts=state.workers.map(w=>'<option value="'+w.id+'">'+esc(w.name)+'</option>').join('');hWorker.innerHTML=opts;pWorker.innerHTML=opts;
+hActivity.innerHTML=state.activities.map(a=>'<option value="'+a.id+'">'+esc(a.name)+' — '+money(a.rate)+'/h</option>').join('');
+let rw='<option value="">Tous les travailleurs</option>'+state.workers.map(w=>'<option value="'+w.id+'">'+esc(w.name)+'</option>').join('');reportWorker.innerHTML=rw;
+reportActivity.innerHTML='<option value="">Toutes les activités</option>'+state.activities.map(a=>'<option value="'+a.id+'">'+esc(a.name)+'</option>').join('');
+let months=[...new Set(state.hours.map(x=>x.date.slice(0,7)))].sort().reverse();hourMonth.innerHTML='<option value="">Toutes les dates</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+}
+function addWorker(e){e.preventDefault();state.workers.push({id:uid(),name:wName.value.trim(),phone:wPhone.value.trim(),ref:wRef.value.trim()});save();e.target.reset();closeModal('workerModal');render()}
+function addActivity(e){e.preventDefault();state.activities.push({id:uid(),name:aName.value.trim(),rate:Number(aRate.value)});save();e.target.reset();closeModal('activityModal');render()}
+function addHours(e){e.preventDefault();let a=activity(hActivity.value);state.hours.push({id:uid(),date:hDate.value,workerId:hWorker.value,activityId:hActivity.value,hours:Number(hHours.value),rate:Number(a.rate),note:hNote.value.trim()});save();e.target.reset();hDate.value=today();closeModal('hourModal');render()}
+function addPayment(e){e.preventDefault();state.payments.push({id:uid(),date:pDate.value,workerId:pWorker.value,type:pType.value,amount:Number(pAmount.value),note:pNote.value.trim()});save();e.target.reset();pDate.value=today();closeModal('paymentModal');render()}
+function delWorker(x){if(confirm('Supprimer ce travailleur et tout son historique ?')){state.workers=state.workers.filter(w=>w.id!==x);state.hours=state.hours.filter(h=>h.workerId!==x);state.payments=state.payments.filter(p=>p.workerId!==x);save();render()}}
+function delActivity(x){if(confirm('Supprimer cette activité et ses pointages ?')){state.activities=state.activities.filter(a=>a.id!==x);state.hours=state.hours.filter(h=>h.activityId!==x);save();render()}}
+function delHour(x){if(confirm('Supprimer ce pointage ?')){state.hours=state.hours.filter(h=>h.id!==x);save();render()}}
+function delPayment(x){if(confirm('Supprimer ce mouvement ?')){state.payments=state.payments.filter(p=>p.id!==x);save();render()}}
+function showWorker(id){
+let w=worker(id),t=totals(id),hs=state.hours.filter(x=>x.workerId===id).sort((a,b)=>b.date.localeCompare(a.date)),ps=state.payments.filter(x=>x.workerId===id).sort((a,b)=>b.date.localeCompare(a.date));
+workerDetail.innerHTML='<div class="profile-head"><div><div class="profile-name">'+esc(w.name)+'</div><div class="profile-meta">Référence : '+esc(w.ref||'-')+' · Téléphone : '+esc(w.phone||'-')+'</div></div><button class="btn secondary" onclick="goFromDetail()">Rapports</button></div><div class="kpis"><div class="kpi"><span>Heures</span><b>'+t.hours+' h</b></div><div class="kpi"><span>Rémunération</span><b>'+money(t.gross)+'</b></div><div class="kpi"><span>Versé</span><b>'+money(t.paid)+'</b></div><div class="kpi"><span>Reste</span><b>'+money(t.due)+'</b></div></div><h3>Activités et heures</h3><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Activité</th><th>Heures</th><th>Taux</th><th>Montant</th></tr></thead><tbody>'+hs.map(x=>'<tr><td>'+x.date+'</td><td>'+esc(activity(x.activityId)?.name||'-')+'</td><td>'+x.hours+' h</td><td>'+money(x.rate)+'</td><td>'+money(x.hours*x.rate)+'</td></tr>').join('')||'<tr><td colspan="5" class="empty">Aucune heure.</td></tr>'+'</tbody></table></div><h3 style="margin-top:20px">Avances et paiements</h3><div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Type</th><th>Montant</th><th>Note</th></tr></thead><tbody>'+ps.map(x=>'<tr><td>'+x.date+'</td><td>'+x.type+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.note||'-')+'</td></tr>').join('')||'<tr><td colspan="4" class="empty">Aucun mouvement.</td></tr>'+'</tbody></table></div>';
+openModal('workerDetailModal')
+}
+function goFromDetail(){closeModal('workerDetailModal');go('reports');reportWorker.value=workerDetail.dataset.worker||'';renderReports()}
+function openModal(x){if((x==='hourModal'||x==='paymentModal')&&!state.workers.length){alert('Ajoutez d’abord un travailleur.');return}document.getElementById(x).classList.add('show');if(x==='hourModal')hDate.value=today();if(x==='paymentModal')pDate.value=today()}
+function closeModal(x){document.getElementById(x).classList.remove('show')}
+function exportCSV(){
+let rows=[['Travailleur','Activité','Date','Heures','Taux horaire','Rémunération'],...reportHours().map(x=>[worker(x.workerId)?.name||'',activity(x.activityId)?.name||'',x.date,x.hours,x.rate,x.hours*x.rate])];
+let csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='rapport-e-gestion.csv';a.click()
+}
+function resetAll(){if(confirm('Effacer toutes les données enregistrées sur cet appareil ?')){localStorage.removeItem(KEY);location.reload()}}
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
-render();
+hDate.value=today();pDate.value=today();reportDate.value=today();render();
 </script>
-</body></html>
+</body>
+</html>
